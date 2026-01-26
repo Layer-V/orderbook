@@ -202,7 +202,7 @@ mod tests {
         let _ = book.add_limit_order(OrderId::new(), 110, 20, Side::Buy, TimeInForce::Gtc, None);
 
         // Get all liquidity
-        let liquidity = book.liquidity_in_range(0, u64::MAX, Side::Buy);
+        let liquidity = book.liquidity_in_range(0, u128::MAX, Side::Buy);
 
         assert_eq!(liquidity, 45); // 10 + 15 + 20
     }

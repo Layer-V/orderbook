@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{OrderBook, OrderBookError};
-    use pricelevel::{OrderId, OrderType, Side, TimeInForce};
+    use pricelevel::{Hash32, OrderId, OrderType, Side, TimeInForce};
 
     // Helper function to create a unique order ID
     fn create_order_id() -> OrderId {
@@ -9,12 +9,13 @@ mod tests {
     }
 
     // Helper to create a standard limit order
-    fn create_standard_order(price: u64, quantity: u64, side: Side) -> OrderType<()> {
+    fn create_standard_order(price: u128, quantity: u64, side: Side) -> OrderType<()> {
         OrderType::Standard {
             id: create_order_id(),
             price,
             quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -22,13 +23,14 @@ mod tests {
     }
 
     // Helper to create an iceberg order
-    fn create_iceberg_order(price: u64, visible: u64, hidden: u64, side: Side) -> OrderType<()> {
+    fn create_iceberg_order(price: u128, visible: u64, hidden: u64, side: Side) -> OrderType<()> {
         OrderType::IcebergOrder {
             id: create_order_id(),
             price,
             visible_quantity: visible,
             hidden_quantity: hidden,
             side,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -36,12 +38,13 @@ mod tests {
     }
 
     // Helper to create a post-only order
-    fn create_post_only_order(price: u64, quantity: u64, side: Side) -> OrderType<()> {
+    fn create_post_only_order(price: u128, quantity: u64, side: Side) -> OrderType<()> {
         OrderType::PostOnly {
             id: create_order_id(),
             price,
             quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -416,6 +419,7 @@ mod tests {
             price: 1000,
             quantity: 5,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Ioc,
             extra_fields: (),
@@ -443,6 +447,7 @@ mod tests {
             price: 1000,
             quantity: 5,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Fok,
             extra_fields: (),
@@ -466,6 +471,7 @@ mod tests {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Fok,
             extra_fields: (),
@@ -553,6 +559,7 @@ mod tests {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force: TimeInForce::Day,
             extra_fields: (),

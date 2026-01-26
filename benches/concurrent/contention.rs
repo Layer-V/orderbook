@@ -194,10 +194,10 @@ fn measure_hot_spot_contention(
                 let target_hot_spot = (i as usize % 100) < hot_spot_percentage;
 
                 // Choose price based on hot spot decision
-                let price = if target_hot_spot {
+                let price: u128 = if target_hot_spot {
                     1000 // Hot spot price
                 } else {
-                    1001 + (thread_id % 19) as u64 // Other prices
+                    1001 + (thread_id % 19) as u128 // Other prices
                 };
 
                 // Perform operations

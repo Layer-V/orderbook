@@ -37,7 +37,7 @@ impl OrderBookSnapshot {
     }
 
     /// Get the best bid price and quantity
-    pub fn best_bid(&self) -> Option<(u64, u64)> {
+    pub fn best_bid(&self) -> Option<(u128, u64)> {
         let bids = self
             .bids
             .iter()
@@ -48,7 +48,7 @@ impl OrderBookSnapshot {
     }
 
     /// Get the best ask price and quantity
-    pub fn best_ask(&self) -> Option<(u64, u64)> {
+    pub fn best_ask(&self) -> Option<(u128, u64)> {
         let ask = self
             .asks
             .iter()
@@ -71,7 +71,7 @@ impl OrderBookSnapshot {
     }
 
     /// Get the spread (best ask - best bid)
-    pub fn spread(&self) -> Option<u64> {
+    pub fn spread(&self) -> Option<u128> {
         let spread = match (self.best_bid(), self.best_ask()) {
             (Some((bid_price, _)), Some((ask_price, _))) => {
                 Some(ask_price.saturating_sub(bid_price))
@@ -97,22 +97,22 @@ impl OrderBookSnapshot {
     }
 
     /// Calculate the total value on the bid side (price * quantity)
-    pub fn total_bid_value(&self) -> u64 {
+    pub fn total_bid_value(&self) -> u128 {
         let value = self
             .bids
             .iter()
-            .map(|level| level.price * level.total_quantity())
+            .map(|level| level.price * level.total_quantity() as u128)
             .sum();
         trace!("total_bid_value: {:?}", value);
         value
     }
 
     /// Calculate the total value on the ask side (price * quantity)
-    pub fn total_ask_value(&self) -> u64 {
+    pub fn total_ask_value(&self) -> u128 {
         let value = self
             .asks
             .iter()
-            .map(|level| level.price * level.total_quantity())
+            .map(|level| level.price * level.total_quantity() as u128)
             .sum();
         trace!("total_ask_value: {:?}", value);
         value
@@ -443,13 +443,14 @@ impl EnrichedSnapshot {
     fn calculate_vwap(levels: &[PriceLevelSnapshot], max_levels: usize) -> Option<f64> {
         let levels_to_use = levels.iter().take(max_levels);
 
-        let mut total_value = 0u64;
+        let mut total_value = 0u128;
         let mut total_quantity = 0u64;
 
         for level in levels_to_use {
             let quantity = level.total_quantity();
             if quantity > 0 {
-                total_value = total_value.saturating_add(level.price.saturating_mul(quantity));
+                total_value =
+                    total_value.saturating_add(level.price.saturating_mul(quantity as u128));
                 total_quantity = total_quantity.saturating_add(quantity);
             }
         }

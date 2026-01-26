@@ -24,7 +24,7 @@ where
     }
 
     /// Check if there would be a price crossing
-    pub fn will_cross_market(&self, price: u64, side: Side) -> bool {
+    pub fn will_cross_market(&self, price: u128, side: Side) -> bool {
         match side {
             Side::Buy => OrderBook::<T>::best_ask(self).is_some_and(|best_ask| price >= best_ask),
             Side::Sell => OrderBook::<T>::best_bid(self).is_some_and(|best_bid| price <= best_bid),
@@ -76,6 +76,7 @@ where
                 price,
                 quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 ..
@@ -84,6 +85,7 @@ where
                 price: *price,
                 quantity: *quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 extra_fields: (),
@@ -94,6 +96,7 @@ where
                 visible_quantity,
                 hidden_quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 ..
@@ -103,6 +106,7 @@ where
                 visible_quantity: *visible_quantity,
                 hidden_quantity: *hidden_quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 extra_fields: (),
@@ -112,6 +116,7 @@ where
                 price,
                 quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 ..
@@ -120,6 +125,7 @@ where
                 price: *price,
                 quantity: *quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 extra_fields: (),
@@ -129,6 +135,7 @@ where
                 price,
                 quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 trail_amount,
@@ -139,6 +146,7 @@ where
                 price: *price,
                 quantity: *quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 trail_amount: *trail_amount,
@@ -150,6 +158,7 @@ where
                 price,
                 quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 reference_price_offset,
@@ -160,6 +169,7 @@ where
                 price: *price,
                 quantity: *quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 reference_price_offset: *reference_price_offset,
@@ -171,6 +181,7 @@ where
                 price,
                 quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 ..
@@ -179,6 +190,7 @@ where
                 price: *price,
                 quantity: *quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 extra_fields: (),
@@ -189,6 +201,7 @@ where
                 visible_quantity,
                 hidden_quantity,
                 side,
+                user_id,
                 timestamp,
                 time_in_force,
                 replenish_threshold,
@@ -201,6 +214,7 @@ where
                 visible_quantity: *visible_quantity,
                 hidden_quantity: *hidden_quantity,
                 side: *side,
+                user_id: *user_id,
                 timestamp: *timestamp,
                 time_in_force: *time_in_force,
                 replenish_threshold: *replenish_threshold,
@@ -217,7 +231,7 @@ mod tests {
     use crate::OrderBookError; // Import the error type
     use crate::orderbook::book::OrderBook;
     use crate::utils::current_time_millis; // Import the time utility
-    use pricelevel::{OrderId, OrderType, Side, TimeInForce};
+    use pricelevel::{Hash32, OrderId, OrderType, Side, TimeInForce};
     use std::sync::Arc;
 
     // Helper function to create a unique order ID
@@ -234,6 +248,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -243,7 +258,7 @@ mod tests {
 
         // Verify order location
         let location = order_book.order_locations.get(&order_id).unwrap();
-        assert_eq!(*location.value(), (100, Side::Buy));
+        assert_eq!(*location.value(), (100u128, Side::Buy));
 
         // Verify order in price level by checking its properties
         let price_level = order_book.bids.get(&100).unwrap();
@@ -271,6 +286,7 @@ mod tests {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time,
             time_in_force: TimeInForce::Day,
             extra_fields: (),

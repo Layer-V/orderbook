@@ -1,7 +1,7 @@
 //! Additional unit tests to improve test coverage for private.rs
 //! These tests target specific uncovered lines and edge cases
 
-use pricelevel::{OrderId, OrderType, PegReferenceType, Side, TimeInForce};
+use pricelevel::{Hash32, OrderId, OrderType, PegReferenceType, Side, TimeInForce};
 use std::sync::Arc;
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -33,6 +33,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time,
             time_in_force: TimeInForce::Day,
             extra_fields: TestExtraFields::default(),
@@ -53,6 +54,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time,
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),
@@ -111,6 +113,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),
@@ -141,6 +144,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Sell,
+            user_id: Hash32::zero(),
             timestamp: current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),
@@ -172,6 +176,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields {
@@ -187,6 +192,7 @@ mod tests {
                 price: converted_price,
                 quantity: converted_quantity,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 extra_fields: _,
@@ -216,6 +222,7 @@ mod tests {
             visible_quantity: 5,
             hidden_quantity: 15,
             side: Side::Sell,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Ioc,
             extra_fields: TestExtraFields {
@@ -232,6 +239,7 @@ mod tests {
                 visible_quantity: converted_visible,
                 hidden_quantity: converted_hidden,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 extra_fields: _,
@@ -261,6 +269,7 @@ mod tests {
             price: 100,
             quantity: 20,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Fok,
             extra_fields: TestExtraFields {
@@ -276,6 +285,7 @@ mod tests {
                 price: converted_price,
                 quantity: converted_quantity,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 extra_fields: _,
@@ -304,6 +314,7 @@ mod tests {
             price: 100,
             quantity: 25,
             side: Side::Sell,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Day,
             trail_amount: 5,
@@ -321,6 +332,7 @@ mod tests {
                 price: converted_price,
                 quantity: converted_quantity,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 trail_amount: converted_trail,
@@ -353,6 +365,7 @@ mod tests {
             price: 100,
             quantity: 30,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             reference_price_offset: 2,
@@ -370,6 +383,7 @@ mod tests {
                 price: converted_price,
                 quantity: converted_quantity,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 reference_price_offset: converted_offset,
@@ -402,6 +416,7 @@ mod tests {
             price: 100,
             quantity: 35,
             side: Side::Sell,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Ioc,
             extra_fields: TestExtraFields {
@@ -417,6 +432,7 @@ mod tests {
                 price: converted_price,
                 quantity: converted_quantity,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 extra_fields: _,
@@ -446,6 +462,7 @@ mod tests {
             visible_quantity: 10,
             hidden_quantity: 40,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Fok,
             replenish_threshold: 5,
@@ -465,6 +482,7 @@ mod tests {
                 visible_quantity: converted_visible,
                 hidden_quantity: converted_hidden,
                 side: converted_side,
+                user_id: _,
                 timestamp: converted_timestamp,
                 time_in_force: converted_tif,
                 replenish_threshold: converted_threshold,
@@ -499,6 +517,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time,
             time_in_force: TimeInForce::Gtd(current_time + 10000), // Expires in future
             extra_fields: TestExtraFields::default(),
@@ -519,6 +538,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time,
             time_in_force: TimeInForce::Gtd(current_time - 1000), // Expired
             extra_fields: TestExtraFields::default(),
@@ -550,6 +570,7 @@ mod tests {
             price: 100,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),
@@ -564,6 +585,7 @@ mod tests {
             price: 100,
             quantity: 15,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: current_time_millis(),
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),

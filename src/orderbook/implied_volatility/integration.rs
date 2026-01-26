@@ -217,7 +217,7 @@ where
     ///
     /// Weights the mid price by the quantities available at best bid and ask.
     /// This gives more weight to the side with more liquidity.
-    fn weighted_mid_price_for_iv(&self, bid: u64, ask: u64, price_scale: f64) -> f64 {
+    fn weighted_mid_price_for_iv(&self, bid: u128, ask: u128, price_scale: f64) -> f64 {
         let bid_f = bid as f64 / price_scale;
         let ask_f = ask as f64 / price_scale;
 
@@ -239,7 +239,7 @@ where
     }
 
     /// Gets the total quantity at a specific price level.
-    fn quantity_at_price(&self, price: u64, side: Side) -> u64 {
+    fn quantity_at_price(&self, price: u128, side: Side) -> u64 {
         let price_levels = match side {
             Side::Buy => &self.bids,
             Side::Sell => &self.asks,

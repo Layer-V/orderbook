@@ -19,10 +19,10 @@ pub struct MarketImpact {
     pub avg_price: f64,
 
     /// Worst (furthest from best price) execution price (in price units)
-    pub worst_price: u64,
+    pub worst_price: u128,
 
     /// Absolute slippage from best price (in price units)
-    pub slippage: u64,
+    pub slippage: u128,
 
     /// Slippage in basis points
     pub slippage_bps: f64,
@@ -41,7 +41,7 @@ pub struct MarketImpact {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct OrderSimulation {
     /// Vector of fills as (price, quantity) pairs
-    pub fills: Vec<(u64, u64)>,
+    pub fills: Vec<(u128, u64)>,
 
     /// Average execution price across all fills (in price units)
     pub avg_price: f64,
@@ -139,7 +139,7 @@ impl OrderSimulation {
     pub fn total_cost(&self) -> u128 {
         self.fills
             .iter()
-            .map(|(price, qty)| (*price as u128) * (*qty as u128))
+            .map(|(price, qty)| *price * (*qty as u128))
             .sum()
     }
 }

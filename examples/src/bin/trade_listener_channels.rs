@@ -16,9 +16,9 @@ fn add_liquidity(book: &orderbook_rs::OrderBook<()>, symbol: &str) {
     info!("Adding liquidity to {}", symbol);
 
     // Add some ask orders (sell side)
-    for i in 1..=5 {
+    for i in 1u64..=5 {
         let order_id = OrderId::from_u64(1000 + i);
-        let price = 50000 + (i * 10); // Prices: 50010, 50020, 50030, etc.
+        let price: u128 = 50000 + (i as u128 * 10); // Prices: 50010, 50020, 50030, etc.
         let quantity = 100;
 
         if let Err(e) = book.add_limit_order(
@@ -34,9 +34,9 @@ fn add_liquidity(book: &orderbook_rs::OrderBook<()>, symbol: &str) {
     }
 
     // Add some bid orders (buy side)
-    for i in 1..=5 {
+    for i in 1u64..=5 {
         let order_id = OrderId::from_u64(2000 + i);
-        let price = 49990 - (i * 10); // Prices: 49980, 49970, 49960, etc.
+        let price: u128 = 49990 - (i as u128 * 10); // Prices: 49980, 49970, 49960, etc.
         let quantity = 100;
 
         if let Err(e) =

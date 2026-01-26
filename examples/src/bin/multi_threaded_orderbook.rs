@@ -50,7 +50,7 @@ fn run_performance_test() {
             // Wait for all threads to be ready
             thread_barrier.wait();
 
-            let mut local_counter = 0;
+            let mut local_counter: u64 = 0;
 
             // Run operations until the main thread signals to stop
             while thread_running.load(std::sync::atomic::Ordering::Relaxed) {
@@ -60,9 +60,9 @@ fn run_performance_test() {
                         // This thread adds limit orders
                         let buy_side = local_counter % 2 == 0;
                         let side = if buy_side { Side::Buy } else { Side::Sell };
-                        let price_base = if buy_side { 9900 } else { 10100 };
-                        let price_offset = (local_counter % 10) * 10;
-                        let price = price_base + price_offset;
+                        let price_base: u128 = if buy_side { 9900 } else { 10100 };
+                        let price_offset: u128 = (local_counter as u128 % 10) * 10;
+                        let price: u128 = price_base + price_offset;
 
                         let id = OrderId::new_uuid();
                         let _ = thread_book.add_limit_order(
@@ -192,7 +192,7 @@ fn populate_orderbook(book: &OrderBook, order_count: usize) {
 
     // Add buy orders
     for i in 0..(order_count / 2) {
-        let price = (9900 + (i % 100) * 10) as u64; // 9900-10890
+        let price: u128 = 9900 + (i as u128 % 100) * 10; // 9900-10890
         let id = OrderId::new_uuid();
         let _ = book.add_limit_order(
             id,
@@ -206,7 +206,7 @@ fn populate_orderbook(book: &OrderBook, order_count: usize) {
 
     // Add sell orders
     for i in 0..(order_count / 2) {
-        let price = (10100 + (i % 100) * 10) as u64; // 10100-11090
+        let price: u128 = 10100 + (i as u128 % 100) * 10; // 10100-11090
         let id = OrderId::new_uuid();
         let _ = book.add_limit_order(
             id,

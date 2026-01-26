@@ -1,6 +1,6 @@
 use orderbook_rs::OrderBook;
 use orderbook_rs::orderbook::modifications::OrderQuantity;
-use pricelevel::{OrderId, OrderType, Side, TimeInForce};
+use pricelevel::{Hash32, OrderId, OrderType, Side, TimeInForce};
 
 #[derive(Clone, Debug, Default, PartialEq)]
 struct TestExtraFields {
@@ -359,6 +359,7 @@ mod tests {
             price: 1000,
             quantity: 100,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 0,
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),
@@ -371,6 +372,7 @@ mod tests {
             visible_quantity: 20,
             hidden_quantity: 80,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 0,
             time_in_force: TimeInForce::Gtc,
             extra_fields: TestExtraFields::default(),

@@ -2,7 +2,7 @@
 
 use super::book::OrderBook;
 use super::error::OrderBookError;
-use pricelevel::{MatchResult, OrderId, OrderType, Side, TimeInForce};
+use pricelevel::{Hash32, MatchResult, OrderId, OrderType, Side, TimeInForce};
 use std::sync::Arc;
 use tracing::trace;
 
@@ -14,7 +14,7 @@ where
     pub fn add_limit_order(
         &self,
         id: OrderId,
-        price: u64,
+        price: u128,
         quantity: u64,
         side: Side,
         time_in_force: TimeInForce,
@@ -26,6 +26,7 @@ where
             price,
             quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force,
             extra_fields,
@@ -42,7 +43,7 @@ where
     pub fn add_iceberg_order(
         &self,
         id: OrderId,
-        price: u64,
+        price: u128,
         visible_quantity: u64,
         hidden_quantity: u64,
         side: Side,
@@ -56,6 +57,7 @@ where
             visible_quantity,
             hidden_quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force,
             extra_fields,
@@ -71,7 +73,7 @@ where
     pub fn add_post_only_order(
         &self,
         id: OrderId,
-        price: u64,
+        price: u128,
         quantity: u64,
         side: Side,
         time_in_force: TimeInForce,
@@ -83,6 +85,7 @@ where
             price,
             quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp: crate::utils::current_time_millis(),
             time_in_force,
             extra_fields,

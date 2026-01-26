@@ -12,7 +12,7 @@ use std::sync::Arc;
 #[derive(Debug, Clone)]
 pub struct LevelInfo {
     /// The price of this level (in price units)
-    pub price: u64,
+    pub price: u128,
 
     /// Total quantity at this price level (in units)
     pub quantity: u64,
@@ -27,7 +27,7 @@ pub struct LevelInfo {
 /// maintaining cumulative depth as it goes. This is useful for analyzing
 /// market depth distribution and finding liquidity thresholds.
 pub struct LevelsWithCumulativeDepth<'a> {
-    iter: Box<dyn Iterator<Item = crossbeam_skiplist::map::Entry<'a, u64, Arc<PriceLevel>>> + 'a>,
+    iter: Box<dyn Iterator<Item = crossbeam_skiplist::map::Entry<'a, u128, Arc<PriceLevel>>> + 'a>,
     cumulative_depth: u64,
 }
 
@@ -37,7 +37,7 @@ impl<'a> LevelsWithCumulativeDepth<'a> {
     /// # Arguments
     /// - `price_levels`: Reference to the SkipMap of price levels
     /// - `side`: Side to iterate (Buy for bids, Sell for asks)
-    pub fn new(price_levels: &'a SkipMap<u64, Arc<PriceLevel>>, side: Side) -> Self {
+    pub fn new(price_levels: &'a SkipMap<u128, Arc<PriceLevel>>, side: Side) -> Self {
         let iter: Box<dyn Iterator<Item = _> + 'a> = match side {
             Side::Buy => Box::new(price_levels.iter().rev()), // Highest to lowest
             Side::Sell => Box::new(price_levels.iter()),      // Lowest to highest
@@ -73,7 +73,7 @@ impl<'a> Iterator for LevelsWithCumulativeDepth<'a> {
 /// Stops automatically when the cumulative depth reaches or exceeds the target.
 /// Useful for analyzing how many levels are needed to fill a specific quantity.
 pub struct LevelsUntilDepth<'a> {
-    iter: Box<dyn Iterator<Item = crossbeam_skiplist::map::Entry<'a, u64, Arc<PriceLevel>>> + 'a>,
+    iter: Box<dyn Iterator<Item = crossbeam_skiplist::map::Entry<'a, u128, Arc<PriceLevel>>> + 'a>,
     target_depth: u64,
     cumulative_depth: u64,
     finished: bool,
@@ -87,7 +87,7 @@ impl<'a> LevelsUntilDepth<'a> {
     /// - `side`: Side to iterate (Buy for bids, Sell for asks)
     /// - `target_depth`: Target cumulative depth (in units)
     pub fn new(
-        price_levels: &'a SkipMap<u64, Arc<PriceLevel>>,
+        price_levels: &'a SkipMap<u128, Arc<PriceLevel>>,
         side: Side,
         target_depth: u64,
     ) -> Self {
@@ -139,9 +139,9 @@ impl<'a> Iterator for LevelsUntilDepth<'a> {
 /// Only yields levels where the price falls within [min_price, max_price] inclusive.
 /// Useful for analyzing liquidity in specific price bands.
 pub struct LevelsInRange<'a> {
-    iter: Box<dyn Iterator<Item = crossbeam_skiplist::map::Entry<'a, u64, Arc<PriceLevel>>> + 'a>,
-    min_price: u64,
-    max_price: u64,
+    iter: Box<dyn Iterator<Item = crossbeam_skiplist::map::Entry<'a, u128, Arc<PriceLevel>>> + 'a>,
+    min_price: u128,
+    max_price: u128,
     finished: bool,
 }
 
@@ -154,10 +154,10 @@ impl<'a> LevelsInRange<'a> {
     /// - `min_price`: Minimum price (inclusive, in price units)
     /// - `max_price`: Maximum price (inclusive, in price units)
     pub fn new(
-        price_levels: &'a SkipMap<u64, Arc<PriceLevel>>,
+        price_levels: &'a SkipMap<u128, Arc<PriceLevel>>,
         side: Side,
-        min_price: u64,
-        max_price: u64,
+        min_price: u128,
+        max_price: u128,
     ) -> Self {
         let iter: Box<dyn Iterator<Item = _> + 'a> = match side {
             Side::Buy => Box::new(price_levels.iter().rev()),

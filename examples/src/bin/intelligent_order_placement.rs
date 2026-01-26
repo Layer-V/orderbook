@@ -435,7 +435,7 @@ fn demo_market_making_strategy(book: &OrderBook) {
 }
 
 // Helper function to calculate depth at a specific price
-fn calculate_depth_at_price(book: &OrderBook, target_price: u64, side: Side) -> u64 {
+fn calculate_depth_at_price(book: &OrderBook, target_price: u128, side: Side) -> u64 {
     let best_price = match side {
         Side::Buy => book.best_bid(),
         Side::Sell => book.best_ask(),

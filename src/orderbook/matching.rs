@@ -25,7 +25,7 @@ where
         order_id: OrderId,
         side: Side,
         quantity: u64,
-        limit_price: Option<u64>,
+        limit_price: Option<u128>,
     ) -> Result<MatchResult, OrderBookError> {
         self.cache.invalidate();
         let mut match_result = MatchResult::new(order_id, quantity);
@@ -95,7 +95,7 @@ where
             // Process transactions if any occurred
             if !price_level_match.transactions.as_vec().is_empty() {
                 // Update last trade price atomically
-                self.last_trade_price.store(price, Ordering::Relaxed);
+                self.last_trade_price.store(price);
                 self.has_traded.store(true, Ordering::Relaxed);
 
                 // Add transactions to result
@@ -170,7 +170,7 @@ where
     /// # Performance Optimization
     /// Uses SkipMap's natural ordering to eliminate sorting overhead.
     /// Time complexity: O(M log N) where M = price levels inspected.
-    pub fn peek_match(&self, side: Side, quantity: u64, price_limit: Option<u64>) -> u64 {
+    pub fn peek_match(&self, side: Side, quantity: u64, price_limit: Option<u128>) -> u64 {
         let price_levels = match side {
             Side::Buy => &self.asks,
             Side::Sell => &self.bids,
@@ -220,7 +220,7 @@ where
     /// Batch operation for multiple order matches (additional optimization)
     pub fn match_orders_batch(
         &self,
-        orders: &[(OrderId, Side, u64, Option<u64>)],
+        orders: &[(OrderId, Side, u64, Option<u128>)],
     ) -> Vec<Result<MatchResult, OrderBookError>> {
         let mut results = Vec::with_capacity(orders.len());
 

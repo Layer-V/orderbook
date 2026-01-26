@@ -363,7 +363,7 @@ mod tests_bis {
     use pricelevel::PriceLevelSnapshot;
 
     // Helper function to create an improved implementation of best_bid
-    fn find_best_bid(snapshot: &OrderBookSnapshot) -> Option<(u64, u64)> {
+    fn find_best_bid(snapshot: &OrderBookSnapshot) -> Option<(u128, u64)> {
         snapshot
             .bids
             .iter()
@@ -372,7 +372,7 @@ mod tests_bis {
     }
 
     // Helper function to create an improved implementation of best_ask
-    fn find_best_ask(snapshot: &OrderBookSnapshot) -> Option<(u64, u64)> {
+    fn find_best_ask(snapshot: &OrderBookSnapshot) -> Option<(u128, u64)> {
         snapshot
             .asks
             .iter()
@@ -543,7 +543,7 @@ mod tests_bis {
         // This test shows how you could implement best_bid() and best_ask() in OrderBookSnapshot
 
         // Implementation for best_bid()
-        fn best_bid(snapshot: &OrderBookSnapshot) -> Option<(u64, u64)> {
+        fn best_bid(snapshot: &OrderBookSnapshot) -> Option<(u128, u64)> {
             snapshot
                 .bids
                 .iter()
@@ -552,7 +552,7 @@ mod tests_bis {
         }
 
         // Implementation for best_ask()
-        fn best_ask(snapshot: &OrderBookSnapshot) -> Option<(u64, u64)> {
+        fn best_ask(snapshot: &OrderBookSnapshot) -> Option<(u128, u64)> {
             snapshot
                 .asks
                 .iter()

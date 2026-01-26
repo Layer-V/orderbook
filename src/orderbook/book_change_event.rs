@@ -12,7 +12,7 @@ pub struct PriceLevelChangedEvent {
     pub side: Side,
 
     /// price level price
-    pub price: u64,
+    pub price: u128,
 
     /// latest visible quantity of the order book at this price level
     pub quantity: u64,

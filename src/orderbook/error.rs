@@ -13,16 +13,16 @@ pub enum OrderBookError {
     OrderNotFound(String),
 
     /// Invalid price level
-    InvalidPriceLevel(u64),
+    InvalidPriceLevel(u128),
 
     /// Price crossing (bid >= ask)
     PriceCrossing {
         /// Price that would cause crossing
-        price: u64,
+        price: u128,
         /// Side of the order
         side: Side,
         /// Best opposite price
-        opposite_price: u64,
+        opposite_price: u128,
     },
 
     /// Insufficient liquidity for market order

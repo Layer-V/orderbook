@@ -88,7 +88,7 @@ fn main() {
                             // Add a buy limit order
                             let id = OrderId::from_u64(thread_id as u64 * 1000000 + local_counter);
                             let level = local_counter % std::cmp::max(1, max_level as u64);
-                            let price = 10000 - level as u64 * 10;
+                            let price: u128 = 10000 - level as u128 * 10;
                             let _ = thread_book.add_limit_order(
                                 id,
                                 price,
@@ -102,7 +102,7 @@ fn main() {
                             // Add a sell limit order
                             let id = OrderId::from_u64(thread_id as u64 * 1000000 + local_counter);
                             let level = local_counter % std::cmp::max(1, max_level as u64);
-                            let price = 10100 + level as u64 * 10;
+                            let price: u128 = 10100 + level as u128 * 10;
                             let _ = thread_book.add_limit_order(
                                 id,
                                 price,
@@ -221,7 +221,7 @@ fn setup_orders_for_test(order_book: &OrderBook, price_levels: i32, orders_per_l
 
     // Buy orders
     for level in 0..price_levels {
-        let price = 10000 - (level as u64 * 10);
+        let price: u128 = 10000 - (level as u128 * 10);
 
         for _ in 0..orders_per_level {
             let id = OrderId::from_u64(order_id);
@@ -233,7 +233,7 @@ fn setup_orders_for_test(order_book: &OrderBook, price_levels: i32, orders_per_l
 
     // Sell orders
     for level in 0..price_levels {
-        let price = 10100 + (level as u64 * 10);
+        let price: u128 = 10100 + (level as u128 * 10);
 
         for _ in 0..orders_per_level {
             let id = OrderId::from_u64(order_id);

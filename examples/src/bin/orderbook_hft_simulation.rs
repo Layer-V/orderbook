@@ -18,9 +18,9 @@ const CANCELLER_THREAD_COUNT: usize = 10;
 const TOTAL_THREAD_COUNT: usize = MAKER_THREAD_COUNT + TAKER_THREAD_COUNT + CANCELLER_THREAD_COUNT;
 
 // Price levels for simulation
-const BASE_BID_PRICE: u64 = 9900;
-const BASE_ASK_PRICE: u64 = 10000;
-const PRICE_LEVELS: u64 = 20;
+const BASE_BID_PRICE: u128 = 9900;
+const BASE_ASK_PRICE: u128 = 10000;
+const PRICE_LEVELS: u128 = 20;
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct OrderMetadata {
@@ -180,7 +180,7 @@ fn preload_order_book(order_book: &OrderBook<OrderMetadata>, count: usize) {
     // Add limit buy orders at different price levels
     for i in 0..(count / 2) {
         let price_level = i % PRICE_LEVELS as usize;
-        let price = BASE_BID_PRICE - price_level as u64 * 10; // Decreasing prices for bids
+        let price = BASE_BID_PRICE - price_level as u128 * 10; // Decreasing prices for bids
         let id = OrderId::new_uuid();
         let quantity = 10 + (i % 10) as u64; // 10-19 units
 
@@ -197,7 +197,7 @@ fn preload_order_book(order_book: &OrderBook<OrderMetadata>, count: usize) {
     // Add limit sell orders at different price levels
     for i in 0..(count / 2) {
         let price_level = i % PRICE_LEVELS as usize;
-        let price = BASE_ASK_PRICE + price_level as u64 * 10; // Increasing prices for asks
+        let price = BASE_ASK_PRICE + price_level as u128 * 10; // Increasing prices for asks
 
         let id = OrderId::new_uuid();
         let quantity = 10 + (i % 10) as u64; // 10-19 units
@@ -350,8 +350,8 @@ fn spawn_maker_thread(
             } else {
                 BASE_ASK_PRICE
             };
-            let price_offset = (local_count % PRICE_LEVELS as u64) * 10;
-            let price = if is_buy {
+            let price_offset: u128 = (local_count as u128 % PRICE_LEVELS) * 10;
+            let price: u128 = if is_buy {
                 price_base - price_offset
             } else {
                 price_base + price_offset

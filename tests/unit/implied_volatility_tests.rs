@@ -4,7 +4,7 @@ use orderbook_rs::{IVConfig, IVParams, IVQuality, OrderBook, PriceSource, Solver
 use pricelevel::{OrderId, Side, TimeInForce};
 
 /// Creates a test order book with realistic option prices.
-fn create_option_book(bid_price: u64, ask_price: u64) -> OrderBook<()> {
+fn create_option_book(bid_price: u128, ask_price: u128) -> OrderBook<()> {
     let book = OrderBook::<()>::new("SPY-C-450-2024-03-15");
 
     // Add multiple bid orders at different quantities

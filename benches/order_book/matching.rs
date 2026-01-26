@@ -1,6 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use orderbook_rs::orderbook::book::OrderBook;
-use pricelevel::{OrderId, OrderType, Side, TimeInForce};
+use pricelevel::{Hash32, OrderId, OrderType, Side, TimeInForce};
 use serde::{Deserialize, Serialize};
 use std::hint::black_box;
 
@@ -27,6 +27,7 @@ fn setup_deep_book() -> OrderBook<OrderMetadata> {
                 side: Side::Sell,
                 price,
                 quantity: 10,
+                user_id: Hash32::zero(),
                 time_in_force: TimeInForce::Gtc,
                 timestamp: 0,
                 extra_fields: OrderMetadata {

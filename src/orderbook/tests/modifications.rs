@@ -219,7 +219,9 @@ mod test_order_modifications {
 mod test_modifications_remaining {
     use crate::OrderBook;
 
-    use pricelevel::{OrderId, OrderType, OrderUpdate, PegReferenceType, Side, TimeInForce};
+    use pricelevel::{
+        Hash32, OrderId, OrderType, OrderUpdate, PegReferenceType, Side, TimeInForce,
+    };
 
     fn create_order_id() -> OrderId {
         OrderId::new_uuid()
@@ -272,6 +274,7 @@ mod test_modifications_remaining {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             trail_amount: 5,
@@ -286,6 +289,7 @@ mod test_modifications_remaining {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             reference_price_offset: 5,
@@ -300,6 +304,7 @@ mod test_modifications_remaining {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -313,6 +318,7 @@ mod test_modifications_remaining {
             visible_quantity: 5,
             hidden_quantity: 5,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             replenish_threshold: 2,
@@ -398,6 +404,7 @@ mod test_modifications_remaining {
             visible_quantity: 5,
             hidden_quantity: 5,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             replenish_threshold: 2,
@@ -453,7 +460,9 @@ mod test_modifications_remaining {
 #[cfg(test)]
 mod test_modifications_specific {
     use crate::{OrderBook, OrderBookError};
-    use pricelevel::{OrderId, OrderType, OrderUpdate, PegReferenceType, Side, TimeInForce};
+    use pricelevel::{
+        Hash32, OrderId, OrderType, OrderUpdate, PegReferenceType, Side, TimeInForce,
+    };
 
     fn create_order_id() -> OrderId {
         OrderId::new_uuid()
@@ -505,6 +514,7 @@ mod test_modifications_specific {
             visible_quantity: 5,
             hidden_quantity: 5,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             replenish_threshold: 2,
@@ -573,6 +583,7 @@ mod test_modifications_specific {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force: TimeInForce::Gtc,
             reference_price_offset: 5,
@@ -612,7 +623,7 @@ mod tests {
     use crate::orderbook::OrderBookError;
     use crate::orderbook::book::OrderBook;
     use crate::orderbook::modifications::OrderQuantity;
-    use pricelevel::{OrderId, OrderType, OrderUpdate, Side, TimeInForce};
+    use pricelevel::{Hash32, OrderId, OrderType, OrderUpdate, Side, TimeInForce};
 
     fn setup_book_with_orders() -> OrderBook<()> {
         let book: OrderBook<()> = OrderBook::new("TEST");
@@ -621,6 +632,7 @@ mod tests {
             side: Side::Sell,
             price: 100,
             quantity: 10,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Gtc,
             timestamp: 0,
             extra_fields: (),
@@ -632,6 +644,7 @@ mod tests {
             side: Side::Buy,
             price: 90,
             quantity: 10,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Gtc,
             timestamp: 0,
             extra_fields: (),
@@ -648,6 +661,7 @@ mod tests {
             side: Side::Buy,
             price: 100, // This price crosses the best ask (100)
             quantity: 5,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Gtc,
             timestamp: 0,
             extra_fields: (),
@@ -667,6 +681,7 @@ mod tests {
             side: Side::Buy,
             price: 95,
             quantity: 10,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Day, // Day order
             timestamp: 101,                  // Submitted after market close
             extra_fields: (),
@@ -688,6 +703,7 @@ mod tests {
             side: Side::Sell,
             price: 100,
             quantity: 10,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Gtc,
             timestamp: 0,
             extra_fields: (),
@@ -740,6 +756,7 @@ mod tests {
             replenish_amount: Some(10),
             auto_replenish: true,
             replenish_threshold: 0,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Gtc,
             timestamp: 0,
             extra_fields: (),

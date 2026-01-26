@@ -352,7 +352,7 @@ fn demo_practical_use_cases(book: &OrderBook) {
 
         if !levels.is_empty() {
             let avg_price =
-                levels.iter().map(|l| l.price).sum::<u64>() as f64 / levels.len() as f64;
+                levels.iter().map(|l| l.price).sum::<u128>() as f64 / levels.len() as f64;
             info!(
                 "   {}: avg price {:.0}, {} levels",
                 desc,
@@ -399,8 +399,8 @@ fn demo_practical_use_cases(book: &OrderBook) {
         .collect();
 
     if levels.len() >= 2 {
-        let spreads: Vec<u64> = levels.windows(2).map(|w| w[0].price - w[1].price).collect();
-        let avg_spread = spreads.iter().sum::<u64>() as f64 / spreads.len() as f64;
+        let spreads: Vec<u128> = levels.windows(2).map(|w| w[0].price - w[1].price).collect();
+        let avg_spread = spreads.iter().sum::<u128>() as f64 / spreads.len() as f64;
         info!("   Average spread between top 5 levels: {:.0}", avg_spread);
     }
 

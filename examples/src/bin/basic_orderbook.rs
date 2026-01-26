@@ -52,9 +52,9 @@ fn demo_adding_orders(book: &OrderBook) {
     info!("\nAdding orders to the OrderBook...");
 
     // Add some buy limit orders at different price levels
-    for i in 0..5 {
-        let price = 9900 + (i * 20); // 9900, 9920, 9940, 9960, 9980
-        let quantity = 10 + (i * 5); // 10, 15, 20, 25, 30
+    for i in 0u64..5 {
+        let price: u128 = 9900 + (i as u128 * 20); // 9900, 9920, 9940, 9960, 9980
+        let quantity: u64 = 10 + (i * 5); // 10, 15, 20, 25, 30
         let id = new_order_id();
 
         let result = book.add_limit_order(id, price, quantity, Side::Buy, TimeInForce::Gtc, None);
@@ -71,9 +71,9 @@ fn demo_adding_orders(book: &OrderBook) {
     }
 
     // Add some sell limit orders at different price levels
-    for i in 0..5 {
-        let price = 10000 + (i * 20); // 10000, 10020, 10040, 10060, 10080
-        let quantity = 10 + (i * 5); // 10, 15, 20, 25, 30
+    for i in 0u64..5 {
+        let price: u128 = 10000 + (i as u128 * 20); // 10000, 10020, 10040, 10060, 10080
+        let quantity: u64 = 10 + (i * 5); // 10, 15, 20, 25, 30
         let id = new_order_id();
 
         let result = book.add_limit_order(id, price, quantity, Side::Sell, TimeInForce::Gtc, None);

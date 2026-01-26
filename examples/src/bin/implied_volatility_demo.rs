@@ -486,8 +486,8 @@ fn demo_iv_surface() {
 
             // Create order book with this price
             let book = OrderBook::<()>::new("TEMP");
-            let price_cents = (price * 100.0) as u64;
-            let spread = (price_cents / 50).max(1); // ~2% spread
+            let price_cents: u128 = (price * 100.0) as u128;
+            let spread: u128 = (price_cents / 50).max(1); // ~2% spread
 
             let _ = book.add_limit_order(
                 OrderId::new(),

@@ -487,10 +487,10 @@ fn test_price_level_distribution() -> Result<(), String> {
                         0 | 1 => {
                             // Add limit buy/sell
                             let side = if op_type == 0 { Side::Buy } else { Side::Sell };
-                            let price = if side == Side::Buy {
-                                10000 - (local_counter % max_level as u64) as u64 * 10
+                            let price: u128 = if side == Side::Buy {
+                                10000 - (local_counter % max_level as u64) as u128 * 10
                             } else {
-                                10100 + (local_counter % max_level as u64) as u64 * 10
+                                10100 + (local_counter % max_level as u64) as u128 * 10
                             };
                             let _ = thread_book.add_limit_order(
                                 OrderId::new_uuid(),

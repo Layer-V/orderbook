@@ -8,19 +8,19 @@ pub fn setup_orders_for_read_write_test(order_book: &OrderBook) {
     info!("Setting up orders for read/write test...");
 
     // Buy orders
-    for i in 0..250 {
-        let price = 9900 + (i % 20) * 5; // 20 price levels: 9900-9995
-        let id = OrderId::from_u64(i as u64);
-        let quantity = 10 + (i % 10);
+    for i in 0u64..250 {
+        let price: u128 = 9900 + (i as u128 % 20) * 5; // 20 price levels: 9900-9995
+        let id = OrderId::from_u64(i);
+        let quantity: u64 = 10 + (i % 10);
 
         let _ = order_book.add_limit_order(id, price, quantity, Side::Buy, TimeInForce::Gtc, None);
     }
 
     // Sell orders
-    for i in 0..250 {
-        let price = 10000 + (i % 20) * 5; // 20 price levels: 10000-10095
-        let id = OrderId::from_u64((i + 250) as u64);
-        let quantity = 10 + (i % 10);
+    for i in 0u64..250 {
+        let price: u128 = 10000 + (i as u128 % 20) * 5; // 20 price levels: 10000-10095
+        let id = OrderId::from_u64(i + 250);
+        let quantity: u64 = 10 + (i % 10);
 
         let _ = order_book.add_limit_order(id, price, quantity, Side::Sell, TimeInForce::Gtc, None);
     }
@@ -37,7 +37,7 @@ pub fn setup_orders_for_hot_spot_test(order_book: &crate::OrderBook) {
     for i in 0..20 {
         let is_buy = i % 2 == 0;
         let side = if is_buy { Side::Buy } else { Side::Sell };
-        let price = if is_buy { 9950 } else { 10050 };
+        let price: u128 = if is_buy { 9950 } else { 10050 };
         let id = OrderId::from_u64(i as u64);
 
         let _ = order_book.add_limit_order(id, price, 10, side, TimeInForce::Gtc, None);
@@ -47,9 +47,9 @@ pub fn setup_orders_for_hot_spot_test(order_book: &crate::OrderBook) {
     for i in 20..500 {
         let is_buy = i % 2 == 0;
         let side = if is_buy { Side::Buy } else { Side::Sell };
-        let price_base = if is_buy { 9900 } else { 10000 };
-        let price_offset = (i % 100) * 1;
-        let price = if is_buy {
+        let price_base: u128 = if is_buy { 9900 } else { 10000 };
+        let price_offset: u128 = (i % 100) * 1;
+        let price: u128 = if is_buy {
             price_base - price_offset
         } else {
             price_base + price_offset
@@ -91,7 +91,7 @@ pub fn setup_orders_for_price_level_test(
 
     // Buy orders
     for level in 0..price_levels {
-        let price = 10000 - (level as u64 * 10);
+        let price: u128 = 10000 - (level as u128 * 10);
 
         for _ in 0..orders_per_level {
             let id = OrderId::from_u64(order_id);
@@ -103,7 +103,7 @@ pub fn setup_orders_for_price_level_test(
 
     // Sell orders
     for level in 0..price_levels {
-        let price = 10100 + (level as u64 * 10);
+        let price: u128 = 10100 + (level as u128 * 10);
 
         for _ in 0..orders_per_level {
             let id = OrderId::from_u64(order_id);

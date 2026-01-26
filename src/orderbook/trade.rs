@@ -62,7 +62,7 @@ pub struct TradeInfo {
 #[derive(Debug, Clone)]
 pub struct TransactionInfo {
     /// The price at which the transaction occurred
-    pub price: u64,
+    pub price: u128,
     /// The quantity traded in this transaction
     pub quantity: u64,
     /// Unique identifier for this transaction

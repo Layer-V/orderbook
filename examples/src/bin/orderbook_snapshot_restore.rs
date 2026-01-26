@@ -71,7 +71,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 fn add_limit_order(
     book: &DefaultOrderBook,
     id: u64,
-    price: u64,
+    price: u128,
     quantity: u64,
     side: Side,
 ) -> Result<(), Box<dyn Error>> {

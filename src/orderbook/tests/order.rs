@@ -1,6 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use pricelevel::{OrderId, OrderType, Side, TimeInForce};
+    use pricelevel::{Hash32, OrderId, OrderType, Side, TimeInForce};
 
     fn create_sample_order_id() -> OrderId {
         OrderId::new_uuid()
@@ -20,6 +20,7 @@ mod tests {
             price,
             quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force,
             extra_fields: (),
@@ -56,6 +57,7 @@ mod tests {
             visible_quantity,
             hidden_quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force,
             extra_fields: (),
@@ -85,6 +87,7 @@ mod tests {
             price,
             quantity,
             side,
+            user_id: Hash32::zero(),
             timestamp,
             time_in_force,
             extra_fields: (),
@@ -112,6 +115,7 @@ mod tests {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Ioc,
             extra_fields: (),
@@ -133,6 +137,7 @@ mod tests {
             price: 1000,
             quantity: 10,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Fok,
             extra_fields: (),
@@ -157,6 +162,7 @@ mod tests {
             price: 1000,
             quantity: original_quantity,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -178,6 +184,7 @@ mod tests {
             visible_quantity: original_quantity,
             hidden_quantity: 200,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -217,6 +224,7 @@ mod tests {
             visible_quantity,
             hidden_quantity,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -259,6 +267,7 @@ mod tests {
             price: 1000,
             quantity: order_quantity,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -290,6 +299,7 @@ mod tests {
             price: 1000,
             quantity: order_quantity,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),
@@ -331,6 +341,7 @@ mod tests {
             visible_quantity,
             hidden_quantity,
             side: Side::Buy,
+            user_id: Hash32::zero(),
             timestamp: 12345678,
             time_in_force: TimeInForce::Gtc,
             extra_fields: (),

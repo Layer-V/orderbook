@@ -4,7 +4,7 @@
 mod tests {
     use crate::orderbook::OrderBookError;
     use crate::orderbook::book::OrderBook;
-    use pricelevel::{OrderId, OrderType, Side, TimeInForce};
+    use pricelevel::{Hash32, OrderId, OrderType, Side, TimeInForce};
 
     // Helper function to create a new order book for testing.
     fn setup_book() -> OrderBook<()> {
@@ -12,12 +12,13 @@ mod tests {
     }
 
     // Helper to add a standard limit order to the book.
-    fn add_limit_order(book: &OrderBook, side: Side, price: u64, quantity: u64) -> OrderId {
+    fn add_limit_order(book: &OrderBook, side: Side, price: u128, quantity: u64) -> OrderId {
         let order = OrderType::Standard {
             id: OrderId::new(),
             side,
             price,
             quantity,
+            user_id: Hash32::zero(),
             time_in_force: TimeInForce::Gtc, // Good-Til-Canceled
             timestamp: 0,                    // Not relevant for these tests
             extra_fields: (),
@@ -42,11 +43,7 @@ mod tests {
         assert_eq!(result.transactions.as_vec().len(), 1);
         assert_eq!(book.asks.len(), 0); // The ask side should be empty now
         assert!(book.has_traded.load(std::sync::atomic::Ordering::SeqCst));
-        assert_eq!(
-            book.last_trade_price
-                .load(std::sync::atomic::Ordering::SeqCst),
-            100
-        );
+        assert_eq!(book.last_trade_price.load(), 100);
     }
 
     #[test]
@@ -130,11 +127,7 @@ mod tests {
 
         let remaining_level = book.asks.get(&102).unwrap();
         assert_eq!(remaining_level.value().total_quantity(), 20); // 40 - 20 = 20 remaining
-        assert_eq!(
-            book.last_trade_price
-                .load(std::sync::atomic::Ordering::SeqCst),
-            102
-        );
+        assert_eq!(book.last_trade_price.load(), 102);
     }
 
     #[test]

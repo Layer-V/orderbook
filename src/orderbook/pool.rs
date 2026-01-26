@@ -5,7 +5,7 @@ use std::cell::RefCell;
 #[derive(Debug)]
 pub struct MatchingPool {
     filled_orders_pool: RefCell<Vec<Vec<OrderId>>>,
-    price_vec_pool: RefCell<Vec<Vec<u64>>>,
+    price_vec_pool: RefCell<Vec<Vec<u128>>>,
 }
 
 impl MatchingPool {
@@ -32,7 +32,7 @@ impl MatchingPool {
     }
 
     /// Retrieves a vector for prices from the pool.
-    pub fn get_price_vec(&self) -> Vec<u64> {
+    pub fn get_price_vec(&self) -> Vec<u128> {
         self.price_vec_pool
             .borrow_mut()
             .pop()
@@ -40,7 +40,7 @@ impl MatchingPool {
     }
 
     /// Returns a price vector to the pool for reuse.
-    pub fn return_price_vec(&self, mut vec: Vec<u64>) {
+    pub fn return_price_vec(&self, mut vec: Vec<u128>) {
         vec.clear();
         self.price_vec_pool.borrow_mut().push(vec);
     }

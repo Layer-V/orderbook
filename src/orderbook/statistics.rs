@@ -64,10 +64,10 @@ impl DepthStats {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct DistributionBin {
     /// Minimum price of this bin (inclusive, in price units)
-    pub min_price: u64,
+    pub min_price: u128,
 
     /// Maximum price of this bin (exclusive, in price units)
-    pub max_price: u64,
+    pub max_price: u128,
 
     /// Total volume in this price range (in units)
     pub volume: u64,
@@ -79,13 +79,13 @@ pub struct DistributionBin {
 impl DistributionBin {
     /// Returns the midpoint price of this bin
     #[must_use]
-    pub fn midpoint(&self) -> u64 {
+    pub fn midpoint(&self) -> u128 {
         (self.min_price + self.max_price) / 2
     }
 
     /// Returns the width of this bin in price units
     #[must_use]
-    pub fn width(&self) -> u64 {
+    pub fn width(&self) -> u128 {
         self.max_price.saturating_sub(self.min_price)
     }
 }
