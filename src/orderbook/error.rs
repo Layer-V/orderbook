@@ -5,6 +5,7 @@ use std::fmt;
 
 /// Errors that can occur within the OrderBook
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum OrderBookError {
     /// Error from underlying price level operations
     PriceLevelError(PriceLevelError),
@@ -60,6 +61,32 @@ pub enum OrderBookError {
         /// Actual checksum value
         actual: String,
     },
+
+    /// Order price is not a multiple of the configured tick size
+    InvalidTickSize {
+        /// The order price that failed validation
+        price: u128,
+        /// The configured tick size
+        tick_size: u128,
+    },
+
+    /// Order quantity is not a multiple of the configured lot size
+    InvalidLotSize {
+        /// The order quantity that failed validation
+        quantity: u64,
+        /// The configured lot size
+        lot_size: u64,
+    },
+
+    /// Order quantity is outside the allowed min/max range
+    OrderSizeOutOfRange {
+        /// The order quantity that failed validation
+        quantity: u64,
+        /// The configured minimum order size, if any
+        min: Option<u64>,
+        /// The configured maximum order size, if any
+        max: Option<u64>,
+    },
 }
 
 impl fmt::Display for OrderBookError {
@@ -101,6 +128,24 @@ impl fmt::Display for OrderBookError {
                 write!(
                     f,
                     "Checksum mismatch: expected {expected}, but computed {actual}"
+                )
+            }
+            OrderBookError::InvalidTickSize { price, tick_size } => {
+                write!(
+                    f,
+                    "invalid tick size: price {price} is not a multiple of tick size {tick_size}"
+                )
+            }
+            OrderBookError::InvalidLotSize { quantity, lot_size } => {
+                write!(
+                    f,
+                    "invalid lot size: quantity {quantity} is not a multiple of lot size {lot_size}"
+                )
+            }
+            OrderBookError::OrderSizeOutOfRange { quantity, min, max } => {
+                write!(
+                    f,
+                    "order size out of range: quantity {quantity}, min {min:?}, max {max:?}"
                 )
             }
         }

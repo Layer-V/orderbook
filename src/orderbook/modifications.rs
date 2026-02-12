@@ -509,6 +509,73 @@ where
             order.price()
         );
 
+        // Tick size validation: reject orders whose price is not a multiple of tick_size
+        if let Some(tick) = self.tick_size
+            && tick > 0
+            && !order.price().is_multiple_of(tick)
+        {
+            return Err(OrderBookError::InvalidTickSize {
+                price: order.price(),
+                tick_size: tick,
+            });
+        }
+
+        // Lot size validation: reject orders whose quantity is not a multiple of lot_size.
+        // For iceberg orders, validate visible and hidden quantities individually.
+        if let Some(lot) = self.lot_size
+            && lot > 0
+        {
+            match &order {
+                OrderType::IcebergOrder {
+                    visible_quantity,
+                    hidden_quantity,
+                    ..
+                } => {
+                    if !visible_quantity.is_multiple_of(lot) {
+                        return Err(OrderBookError::InvalidLotSize {
+                            quantity: *visible_quantity,
+                            lot_size: lot,
+                        });
+                    }
+                    if !hidden_quantity.is_multiple_of(lot) {
+                        return Err(OrderBookError::InvalidLotSize {
+                            quantity: *hidden_quantity,
+                            lot_size: lot,
+                        });
+                    }
+                }
+                _ => {
+                    if !order.total_quantity().is_multiple_of(lot) {
+                        return Err(OrderBookError::InvalidLotSize {
+                            quantity: order.total_quantity(),
+                            lot_size: lot,
+                        });
+                    }
+                }
+            }
+        }
+
+        // Min/max order size validation
+        let qty = order.total_quantity();
+        if let Some(min) = self.min_order_size
+            && qty < min
+        {
+            return Err(OrderBookError::OrderSizeOutOfRange {
+                quantity: qty,
+                min: Some(min),
+                max: self.max_order_size,
+            });
+        }
+        if let Some(max) = self.max_order_size
+            && qty > max
+        {
+            return Err(OrderBookError::OrderSizeOutOfRange {
+                quantity: qty,
+                min: self.min_order_size,
+                max: Some(max),
+            });
+        }
+
         if self.has_expired(&order) {
             return Err(OrderBookError::InvalidOperation {
                 message: "Order has already expired".to_string(),

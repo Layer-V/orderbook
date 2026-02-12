@@ -89,6 +89,22 @@ pub struct OrderBook<T = ()> {
     /// Tracker for special orders that require re-pricing (PeggedOrder and TrailingStop)
     #[cfg(feature = "special_orders")]
     pub(super) special_order_tracker: SpecialOrderTracker,
+
+    /// Minimum price increment for orders. When set, order prices must be
+    /// exact multiples of this value. `None` disables validation (default).
+    pub(super) tick_size: Option<u128>,
+
+    /// Minimum quantity increment for orders. When set, order quantities must be
+    /// exact multiples of this value. `None` disables validation (default).
+    pub(super) lot_size: Option<u64>,
+
+    /// Minimum order size. When set, orders with `total_quantity() < min` are
+    /// rejected. `None` disables validation (default).
+    pub(super) min_order_size: Option<u64>,
+
+    /// Maximum order size. When set, orders with `total_quantity() > max` are
+    /// rejected. `None` disables validation (default).
+    pub(super) max_order_size: Option<u64>,
 }
 
 impl<T> Serialize for OrderBook<T>
@@ -339,7 +355,47 @@ where
             price_level_changed_listener: None,
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
+            tick_size: None,
+            lot_size: None,
+            min_order_size: None,
+            max_order_size: None,
         }
+    }
+
+    /// Create a new order book for the given symbol with tick size validation.
+    ///
+    /// Orders added to this book must have prices that are exact multiples
+    /// of `tick_size`. For example, with `tick_size = 100`, prices 100, 200,
+    /// 300 are valid but 150 is rejected.
+    ///
+    /// # Arguments
+    /// - `symbol`: The trading symbol for this order book
+    /// - `tick_size`: Minimum price increment. Must be > 0
+    ///
+    /// # Returns
+    /// A new `OrderBook` instance with tick size validation enabled
+    pub fn with_tick_size(symbol: &str, tick_size: u128) -> Self {
+        let mut book = Self::new(symbol);
+        book.tick_size = Some(tick_size);
+        book
+    }
+
+    /// Create a new order book for the given symbol with lot size validation.
+    ///
+    /// Orders added to this book must have quantities that are exact multiples
+    /// of `lot_size`. For iceberg orders, both visible and hidden quantities
+    /// are validated individually.
+    ///
+    /// # Arguments
+    /// - `symbol`: The trading symbol for this order book
+    /// - `lot_size`: Minimum quantity increment. Must be > 0
+    ///
+    /// # Returns
+    /// A new `OrderBook` instance with lot size validation enabled
+    pub fn with_lot_size(symbol: &str, lot_size: u64) -> Self {
+        let mut book = Self::new(symbol);
+        book.lot_size = Some(lot_size);
+        book
     }
 
     /// Create a new order book for the given symbol with a trade listener
@@ -364,6 +420,10 @@ where
             price_level_changed_listener: None,
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
+            tick_size: None,
+            lot_size: None,
+            min_order_size: None,
+            max_order_size: None,
         }
     }
 
@@ -401,6 +461,10 @@ where
             price_level_changed_listener: Some(book_changed_listener),
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
+            tick_size: None,
+            lot_size: None,
+            min_order_size: None,
+            max_order_size: None,
         }
     }
 
@@ -422,6 +486,87 @@ where
     /// remove price level listener for this order book
     pub fn remove_price_level_listener(&mut self) {
         self.price_level_changed_listener = None;
+    }
+
+    /// Set the minimum price increment for orders.
+    ///
+    /// When set, order prices must be exact multiples of this value.
+    /// For example, with `tick_size = 100`, prices 100, 200, 300 are valid
+    /// but 150 is rejected with `OrderBookError::InvalidTickSize`.
+    ///
+    /// # Arguments
+    /// - `tick_size`: Minimum price increment. Must be > 0
+    pub fn set_tick_size(&mut self, tick_size: u128) {
+        self.tick_size = Some(tick_size);
+    }
+
+    /// Returns the configured tick size, if any.
+    ///
+    /// `None` means tick size validation is disabled (all prices accepted).
+    #[must_use]
+    pub fn tick_size(&self) -> Option<u128> {
+        self.tick_size
+    }
+
+    /// Set the minimum quantity increment for orders.
+    ///
+    /// When set, order quantities must be exact multiples of this value.
+    /// For iceberg orders, both visible and hidden quantities are validated
+    /// individually. Rejection returns `OrderBookError::InvalidLotSize`.
+    ///
+    /// # Arguments
+    /// - `lot_size`: Minimum quantity increment. Must be > 0
+    pub fn set_lot_size(&mut self, lot_size: u64) {
+        self.lot_size = Some(lot_size);
+    }
+
+    /// Returns the configured lot size, if any.
+    ///
+    /// `None` means lot size validation is disabled (all quantities accepted).
+    #[must_use]
+    #[inline]
+    pub fn lot_size(&self) -> Option<u64> {
+        self.lot_size
+    }
+
+    /// Set the minimum order size.
+    ///
+    /// Orders with `total_quantity() < min_order_size` are rejected with
+    /// `OrderBookError::OrderSizeOutOfRange`.
+    ///
+    /// # Arguments
+    /// - `size`: Minimum allowed order quantity
+    pub fn set_min_order_size(&mut self, size: u64) {
+        self.min_order_size = Some(size);
+    }
+
+    /// Set the maximum order size.
+    ///
+    /// Orders with `total_quantity() > max_order_size` are rejected with
+    /// `OrderBookError::OrderSizeOutOfRange`.
+    ///
+    /// # Arguments
+    /// - `size`: Maximum allowed order quantity
+    pub fn set_max_order_size(&mut self, size: u64) {
+        self.max_order_size = Some(size);
+    }
+
+    /// Returns the configured minimum order size, if any.
+    ///
+    /// `None` means no minimum size validation (default).
+    #[must_use]
+    #[inline]
+    pub fn min_order_size(&self) -> Option<u64> {
+        self.min_order_size
+    }
+
+    /// Returns the configured maximum order size, if any.
+    ///
+    /// `None` means no maximum size validation (default).
+    #[must_use]
+    #[inline]
+    pub fn max_order_size(&self) -> Option<u64> {
+        self.max_order_size
     }
 
     /// Get the symbol of this order book
