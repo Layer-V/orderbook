@@ -68,6 +68,14 @@ pub enum OrderBookError {
         /// The configured tick size
         tick_size: u128,
     },
+
+    /// Order quantity is not a multiple of the configured lot size
+    InvalidLotSize {
+        /// The order quantity that failed validation
+        quantity: u64,
+        /// The configured lot size
+        lot_size: u64,
+    },
 }
 
 impl fmt::Display for OrderBookError {
@@ -115,6 +123,12 @@ impl fmt::Display for OrderBookError {
                 write!(
                     f,
                     "invalid tick size: price {price} is not a multiple of tick size {tick_size}"
+                )
+            }
+            OrderBookError::InvalidLotSize { quantity, lot_size } => {
+                write!(
+                    f,
+                    "invalid lot size: quantity {quantity} is not a multiple of lot size {lot_size}"
                 )
             }
         }

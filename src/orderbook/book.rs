@@ -93,6 +93,10 @@ pub struct OrderBook<T = ()> {
     /// Minimum price increment for orders. When set, order prices must be
     /// exact multiples of this value. `None` disables validation (default).
     pub(super) tick_size: Option<u128>,
+
+    /// Minimum quantity increment for orders. When set, order quantities must be
+    /// exact multiples of this value. `None` disables validation (default).
+    pub(super) lot_size: Option<u64>,
 }
 
 impl<T> Serialize for OrderBook<T>
@@ -344,6 +348,7 @@ where
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
             tick_size: None,
+            lot_size: None,
         }
     }
 
@@ -362,6 +367,24 @@ where
     pub fn with_tick_size(symbol: &str, tick_size: u128) -> Self {
         let mut book = Self::new(symbol);
         book.tick_size = Some(tick_size);
+        book
+    }
+
+    /// Create a new order book for the given symbol with lot size validation.
+    ///
+    /// Orders added to this book must have quantities that are exact multiples
+    /// of `lot_size`. For iceberg orders, both visible and hidden quantities
+    /// are validated individually.
+    ///
+    /// # Arguments
+    /// - `symbol`: The trading symbol for this order book
+    /// - `lot_size`: Minimum quantity increment. Must be > 0
+    ///
+    /// # Returns
+    /// A new `OrderBook` instance with lot size validation enabled
+    pub fn with_lot_size(symbol: &str, lot_size: u64) -> Self {
+        let mut book = Self::new(symbol);
+        book.lot_size = Some(lot_size);
         book
     }
 
@@ -388,6 +411,7 @@ where
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
             tick_size: None,
+            lot_size: None,
         }
     }
 
@@ -426,6 +450,7 @@ where
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
             tick_size: None,
+            lot_size: None,
         }
     }
 
@@ -467,6 +492,27 @@ where
     #[must_use]
     pub fn tick_size(&self) -> Option<u128> {
         self.tick_size
+    }
+
+    /// Set the minimum quantity increment for orders.
+    ///
+    /// When set, order quantities must be exact multiples of this value.
+    /// For iceberg orders, both visible and hidden quantities are validated
+    /// individually. Rejection returns `OrderBookError::InvalidLotSize`.
+    ///
+    /// # Arguments
+    /// - `lot_size`: Minimum quantity increment. Must be > 0
+    pub fn set_lot_size(&mut self, lot_size: u64) {
+        self.lot_size = Some(lot_size);
+    }
+
+    /// Returns the configured lot size, if any.
+    ///
+    /// `None` means lot size validation is disabled (all quantities accepted).
+    #[must_use]
+    #[inline]
+    pub fn lot_size(&self) -> Option<u64> {
+        self.lot_size
     }
 
     /// Get the symbol of this order book
