@@ -60,6 +60,14 @@ pub enum OrderBookError {
         /// Actual checksum value
         actual: String,
     },
+
+    /// Order price is not a multiple of the configured tick size
+    InvalidTickSize {
+        /// The order price that failed validation
+        price: u128,
+        /// The configured tick size
+        tick_size: u128,
+    },
 }
 
 impl fmt::Display for OrderBookError {
@@ -101,6 +109,12 @@ impl fmt::Display for OrderBookError {
                 write!(
                     f,
                     "Checksum mismatch: expected {expected}, but computed {actual}"
+                )
+            }
+            OrderBookError::InvalidTickSize { price, tick_size } => {
+                write!(
+                    f,
+                    "invalid tick size: price {price} is not a multiple of tick size {tick_size}"
                 )
             }
         }

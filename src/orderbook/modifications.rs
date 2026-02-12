@@ -509,6 +509,17 @@ where
             order.price()
         );
 
+        // Tick size validation: reject orders whose price is not a multiple of tick_size
+        if let Some(tick) = self.tick_size
+            && tick > 0
+            && !order.price().is_multiple_of(tick)
+        {
+            return Err(OrderBookError::InvalidTickSize {
+                price: order.price(),
+                tick_size: tick,
+            });
+        }
+
         if self.has_expired(&order) {
             return Err(OrderBookError::InvalidOperation {
                 message: "Order has already expired".to_string(),

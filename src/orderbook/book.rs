@@ -89,6 +89,10 @@ pub struct OrderBook<T = ()> {
     /// Tracker for special orders that require re-pricing (PeggedOrder and TrailingStop)
     #[cfg(feature = "special_orders")]
     pub(super) special_order_tracker: SpecialOrderTracker,
+
+    /// Minimum price increment for orders. When set, order prices must be
+    /// exact multiples of this value. `None` disables validation (default).
+    pub(super) tick_size: Option<u128>,
 }
 
 impl<T> Serialize for OrderBook<T>
@@ -339,7 +343,26 @@ where
             price_level_changed_listener: None,
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
+            tick_size: None,
         }
+    }
+
+    /// Create a new order book for the given symbol with tick size validation.
+    ///
+    /// Orders added to this book must have prices that are exact multiples
+    /// of `tick_size`. For example, with `tick_size = 100`, prices 100, 200,
+    /// 300 are valid but 150 is rejected.
+    ///
+    /// # Arguments
+    /// - `symbol`: The trading symbol for this order book
+    /// - `tick_size`: Minimum price increment. Must be > 0
+    ///
+    /// # Returns
+    /// A new `OrderBook` instance with tick size validation enabled
+    pub fn with_tick_size(symbol: &str, tick_size: u128) -> Self {
+        let mut book = Self::new(symbol);
+        book.tick_size = Some(tick_size);
+        book
     }
 
     /// Create a new order book for the given symbol with a trade listener
@@ -364,6 +387,7 @@ where
             price_level_changed_listener: None,
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
+            tick_size: None,
         }
     }
 
@@ -401,6 +425,7 @@ where
             price_level_changed_listener: Some(book_changed_listener),
             #[cfg(feature = "special_orders")]
             special_order_tracker: SpecialOrderTracker::new(),
+            tick_size: None,
         }
     }
 
@@ -422,6 +447,26 @@ where
     /// remove price level listener for this order book
     pub fn remove_price_level_listener(&mut self) {
         self.price_level_changed_listener = None;
+    }
+
+    /// Set the minimum price increment for orders.
+    ///
+    /// When set, order prices must be exact multiples of this value.
+    /// For example, with `tick_size = 100`, prices 100, 200, 300 are valid
+    /// but 150 is rejected with `OrderBookError::InvalidTickSize`.
+    ///
+    /// # Arguments
+    /// - `tick_size`: Minimum price increment. Must be > 0
+    pub fn set_tick_size(&mut self, tick_size: u128) {
+        self.tick_size = Some(tick_size);
+    }
+
+    /// Returns the configured tick size, if any.
+    ///
+    /// `None` means tick size validation is disabled (all prices accepted).
+    #[must_use]
+    pub fn tick_size(&self) -> Option<u128> {
+        self.tick_size
     }
 
     /// Get the symbol of this order book
