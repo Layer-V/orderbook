@@ -10,6 +10,7 @@
 //! and empty price-level removal.
 
 use super::book::OrderBook;
+use super::book_change_event::PriceLevelChangedEvent;
 use pricelevel::{Hash32, OrderId, Side};
 use serde::{Deserialize, Serialize};
 use tracing::trace;
@@ -88,9 +89,19 @@ where
 {
     /// Cancel all resting orders in the book (both bids and asks).
     ///
-    /// Iterates through every order tracked in `order_locations` and cancels
-    /// each one individually, firing listener notifications and cleaning up
-    /// internal tracking structures.
+    /// This is an optimised bulk operation that clears the entire book in one
+    /// pass instead of cancelling orders individually. It:
+    /// 1. Collects all resting order IDs.
+    /// 2. Emits a [`PriceLevelChangedEvent`] (quantity → 0) for every
+    ///    affected price level so that external listeners can update.
+    /// 3. Clears all internal tracking maps (`order_locations`, `user_orders`)
+    ///    and drains both bid/ask SkipMaps.
+    /// 4. Cleans up the special-order tracker (pegged / trailing stop).
+    ///
+    /// # Performance
+    ///
+    /// O(L + N) where L = price levels and N = total orders, compared to
+    /// O(N log L) for the per-order cancellation path.
     ///
     /// # Returns
     ///
@@ -114,12 +125,57 @@ where
     /// assert_eq!(book.best_ask(), None);
     /// ```
     pub fn cancel_all_orders(&self) -> MassCancelResult {
-        trace!("Order book {}: Mass cancel ALL orders", self.symbol);
+        self.cache.invalidate();
+        trace!("Order book {}: Mass cancel ALL orders (bulk)", self.symbol);
 
-        // Collect all order IDs first to avoid iterator invalidation
-        let order_ids: Vec<OrderId> = self.order_locations.iter().map(|e| *e.key()).collect();
+        // 1. Collect all order IDs before clearing
+        let cancelled_order_ids: Vec<OrderId> =
+            self.order_locations.iter().map(|e| *e.key()).collect();
+        let cancelled_count = cancelled_order_ids.len();
 
-        self.cancel_order_batch(&order_ids)
+        if cancelled_count == 0 {
+            return MassCancelResult {
+                cancelled_count: 0,
+                cancelled_order_ids: Vec::new(),
+            };
+        }
+
+        // 2. Emit PriceLevelChangedEvent (qty → 0) for every affected level
+        if let Some(ref listener) = self.price_level_changed_listener {
+            for entry in self.bids.iter() {
+                listener(PriceLevelChangedEvent {
+                    side: Side::Buy,
+                    price: *entry.key(),
+                    quantity: 0,
+                });
+            }
+            for entry in self.asks.iter() {
+                listener(PriceLevelChangedEvent {
+                    side: Side::Sell,
+                    price: *entry.key(),
+                    quantity: 0,
+                });
+            }
+        }
+
+        // 3. Clear tracking maps
+        self.order_locations.clear();
+        self.user_orders.clear();
+
+        // 4. Drain both SkipMaps
+        while self.bids.pop_front().is_some() {}
+        while self.asks.pop_front().is_some() {}
+
+        // 5. Clear special order tracker
+        #[cfg(feature = "special_orders")]
+        self.special_order_tracker.clear();
+
+        self.cache.invalidate();
+
+        MassCancelResult {
+            cancelled_count,
+            cancelled_order_ids,
+        }
     }
 
     /// Cancel all resting orders on a specific side (bids or asks).
