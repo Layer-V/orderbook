@@ -760,3 +760,125 @@ fn stp_cancel_maker_cleans_user_orders() {
     // We just verify the maker_id is NOT in the remaining user_orders.
     assert!(!result.cancelled_order_ids().contains(&maker_id));
 }
+
+// ---------------------------------------------------------------------------
+// Optimised cancel_all_orders (Issue #14)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn cancel_all_emits_price_level_changed_events() {
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
+    let event_count = Arc::new(AtomicUsize::new(0));
+    let counter = event_count.clone();
+
+    let mut book: OrderBook<()> = OrderBook::new("EVENTS");
+    book.set_price_level_listener(Arc::new(move |_event| {
+        counter.fetch_add(1, Ordering::Relaxed);
+    }));
+
+    // Create 3 distinct price levels on bids, 2 on asks = 5 levels total
+    for i in 0..3 {
+        book.add_limit_order(
+            OrderId::new_uuid(),
+            100 + i,
+            10,
+            Side::Buy,
+            TimeInForce::Gtc,
+            None,
+        )
+        .expect("bid");
+    }
+    for i in 0..2 {
+        book.add_limit_order(
+            OrderId::new_uuid(),
+            200 + i,
+            5,
+            Side::Sell,
+            TimeInForce::Gtc,
+            None,
+        )
+        .expect("ask");
+    }
+
+    // Reset counter — we only care about events from cancel_all
+    event_count.store(0, Ordering::Relaxed);
+
+    let result = book.cancel_all_orders();
+    assert_eq!(result.cancelled_count(), 5);
+
+    // Should have fired exactly 5 events (one per price level)
+    assert_eq!(event_count.load(Ordering::Relaxed), 5);
+}
+
+#[test]
+fn cancel_all_returns_all_ids() {
+    let book = new_book();
+    let mut ids = Vec::new();
+
+    // Use non-crossing prices: bids at 50..60, asks at 200..210
+    for i in 0..10 {
+        let id = OrderId::new_uuid();
+        ids.push(id);
+        book.add_limit_order(id, 50 + i, 1, Side::Buy, TimeInForce::Gtc, None)
+            .expect("bid");
+    }
+    for i in 0..10 {
+        let id = OrderId::new_uuid();
+        ids.push(id);
+        book.add_limit_order(id, 200 + i, 1, Side::Sell, TimeInForce::Gtc, None)
+            .expect("ask");
+    }
+
+    let result = book.cancel_all_orders();
+    assert_eq!(result.cancelled_count(), 20);
+    for id in &ids {
+        assert!(result.cancelled_order_ids().contains(id));
+    }
+}
+
+#[test]
+fn cancel_all_idempotent() {
+    let book = new_book();
+    for _ in 0..5 {
+        book.add_limit_order(
+            OrderId::new_uuid(),
+            100,
+            10,
+            Side::Buy,
+            TimeInForce::Gtc,
+            None,
+        )
+        .expect("add");
+    }
+
+    let r1 = book.cancel_all_orders();
+    assert_eq!(r1.cancelled_count(), 5);
+
+    let r2 = book.cancel_all_orders();
+    assert_eq!(r2.cancelled_count(), 0);
+    assert!(r2.is_empty());
+}
+
+#[test]
+fn cancel_all_clears_book_completely() {
+    let book = new_book();
+    for i in 0..100 {
+        let side = if i % 2 == 0 { Side::Buy } else { Side::Sell };
+        book.add_limit_order(
+            OrderId::new_uuid(),
+            100 + (i % 50),
+            10,
+            side,
+            TimeInForce::Gtc,
+            None,
+        )
+        .expect("add");
+    }
+
+    let _ = book.cancel_all_orders();
+
+    assert_eq!(book.best_bid(), None);
+    assert_eq!(book.best_ask(), None);
+}

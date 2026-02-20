@@ -1,4 +1,5 @@
 pub mod add_orders;
+pub mod mass_cancel;
 pub mod match_orders;
 pub mod matching;
 pub mod mixed_operations;
@@ -11,4 +12,5 @@ pub fn register_benchmarks(c: &mut criterion::Criterion) {
     update_orders::register_benchmarks(c);
     mixed_operations::register_benchmarks(c);
     matching::register_benchmarks(c);
+    mass_cancel::register_benchmarks(c);
 }
