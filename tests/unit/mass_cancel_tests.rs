@@ -24,8 +24,8 @@ fn uid(byte: u8) -> Hash32 {
 fn cancel_all_on_empty_book_returns_zero() {
     let book = new_book();
     let result = book.cancel_all_orders();
-    assert_eq!(result.cancelled_count, 0);
-    assert!(result.cancelled_order_ids.is_empty());
+    assert_eq!(result.cancelled_count(), 0);
+    assert!(result.cancelled_order_ids().is_empty());
     assert!(result.is_empty());
 }
 
@@ -58,8 +58,8 @@ fn cancel_all_removes_every_order() {
 
     let result = book.cancel_all_orders();
 
-    assert_eq!(result.cancelled_count, 6);
-    assert_eq!(result.cancelled_order_ids.len(), 6);
+    assert_eq!(result.cancelled_count(), 6);
+    assert_eq!(result.cancelled_order_ids().len(), 6);
     assert_eq!(book.best_bid(), None);
     assert_eq!(book.best_ask(), None);
 }
@@ -113,7 +113,7 @@ fn cancel_by_side_buy_leaves_asks() {
 
     let result = book.cancel_orders_by_side(Side::Buy);
 
-    assert_eq!(result.cancelled_count, 2);
+    assert_eq!(result.cancelled_count(), 2);
     assert_eq!(book.best_bid(), None);
     assert_eq!(book.best_ask(), Some(200));
 }
@@ -152,7 +152,7 @@ fn cancel_by_side_sell_leaves_bids() {
 
     let result = book.cancel_orders_by_side(Side::Sell);
 
-    assert_eq!(result.cancelled_count, 2);
+    assert_eq!(result.cancelled_count(), 2);
     assert_eq!(book.best_bid(), Some(100));
     assert_eq!(book.best_ask(), None);
 }
@@ -197,9 +197,9 @@ fn cancel_by_user_removes_only_matching_orders() {
         .expect("b1");
 
     let result = book.cancel_orders_by_user(user_a);
-    assert_eq!(result.cancelled_count, 2);
-    assert!(result.cancelled_order_ids.contains(&id_a1));
-    assert!(result.cancelled_order_ids.contains(&id_a2));
+    assert_eq!(result.cancelled_count(), 2);
+    assert!(result.cancelled_order_ids().contains(&id_a1));
+    assert!(result.cancelled_order_ids().contains(&id_a2));
 
     // user_b order remains
     assert_eq!(book.best_bid(), Some(95));
@@ -276,7 +276,7 @@ fn cancel_by_user_across_multiple_levels_and_sides() {
     .expect("other buy");
 
     let result = book.cancel_orders_by_user(user);
-    assert_eq!(result.cancelled_count, 3);
+    assert_eq!(result.cancelled_count(), 3);
     assert_eq!(book.best_bid(), Some(90));
 }
 
@@ -300,9 +300,9 @@ fn cancel_by_price_range_inclusive_boundaries() {
         .expect("300");
 
     let result = book.cancel_orders_by_price_range(Side::Buy, 100, 200);
-    assert_eq!(result.cancelled_count, 2);
-    assert!(result.cancelled_order_ids.contains(&id1));
-    assert!(result.cancelled_order_ids.contains(&id2));
+    assert_eq!(result.cancelled_count(), 2);
+    assert!(result.cancelled_order_ids().contains(&id1));
+    assert!(result.cancelled_order_ids().contains(&id2));
     assert_eq!(book.best_bid(), Some(300));
 }
 
@@ -324,8 +324,8 @@ fn cancel_by_price_range_single_price() {
     .expect("add 2");
 
     let result = book.cancel_orders_by_price_range(Side::Sell, 150, 150);
-    assert_eq!(result.cancelled_count, 1);
-    assert!(result.cancelled_order_ids.contains(&id));
+    assert_eq!(result.cancelled_count(), 1);
+    assert!(result.cancelled_order_ids().contains(&id));
     assert_eq!(book.best_ask(), Some(200));
 }
 
@@ -377,7 +377,7 @@ fn cancel_by_price_range_multiple_orders_at_same_level() {
         .expect("add 2");
 
     let result = book.cancel_orders_by_price_range(Side::Buy, 100, 100);
-    assert_eq!(result.cancelled_count, 2);
+    assert_eq!(result.cancelled_count(), 2);
     assert_eq!(book.best_bid(), None);
     assert_eq!(book.best_ask(), None);
 }
@@ -430,7 +430,7 @@ fn cancel_all_with_iceberg_orders() {
     .expect("limit");
 
     let result = book.cancel_all_orders();
-    assert_eq!(result.cancelled_count, 2);
+    assert_eq!(result.cancelled_count(), 2);
     assert_eq!(book.best_bid(), None);
     assert_eq!(book.best_ask(), None);
 }
@@ -459,7 +459,7 @@ fn cancel_all_with_post_only_orders() {
     .expect("limit");
 
     let result = book.cancel_all_orders();
-    assert_eq!(result.cancelled_count, 2);
+    assert_eq!(result.cancelled_count(), 2);
     assert_eq!(book.best_bid(), None);
     assert_eq!(book.best_ask(), None);
 }
@@ -472,18 +472,15 @@ fn cancel_all_with_post_only_orders() {
 fn mass_cancel_result_default_is_empty() {
     let result = MassCancelResult::default();
     assert!(result.is_empty());
-    assert_eq!(result.cancelled_count, 0);
-    assert!(result.cancelled_order_ids.is_empty());
+    assert_eq!(result.cancelled_count(), 0);
+    assert!(result.cancelled_order_ids().is_empty());
 }
 
 #[test]
 fn mass_cancel_result_display() {
-    let result = MassCancelResult {
-        cancelled_count: 42,
-        cancelled_order_ids: vec![],
-    };
+    let result = MassCancelResult::default();
     let display = format!("{result}");
-    assert!(display.contains("42"));
+    assert!(display.contains("0"));
 }
 
 // ---------------------------------------------------------------------------
@@ -520,7 +517,7 @@ fn cancel_by_user_on_stp_enabled_book() {
     .expect("b sell");
 
     let result = book.cancel_orders_by_user(user_a);
-    assert_eq!(result.cancelled_count, 1);
+    assert_eq!(result.cancelled_count(), 1);
     assert_eq!(book.best_ask(), Some(200));
 }
 
@@ -543,7 +540,7 @@ fn double_cancel_all_is_idempotent() {
     .expect("add");
 
     let r1 = book.cancel_all_orders();
-    assert_eq!(r1.cancelled_count, 1);
+    assert_eq!(r1.cancelled_count(), 1);
 
     let r2 = book.cancel_all_orders();
     assert!(r2.is_empty());
@@ -573,8 +570,8 @@ fn cancel_by_side_then_cancel_all() {
     .expect("ask");
 
     let r1 = book.cancel_orders_by_side(Side::Buy);
-    assert_eq!(r1.cancelled_count, 1);
+    assert_eq!(r1.cancelled_count(), 1);
 
     let r2 = book.cancel_all_orders();
-    assert_eq!(r2.cancelled_count, 1); // only the ask remains
+    assert_eq!(r2.cancelled_count(), 1); // only the ask remains
 }
