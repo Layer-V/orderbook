@@ -265,9 +265,18 @@ impl NatsBookChangePublisher {
     ///
     /// When the channel is full, new events are dropped and `dropped_events`
     /// is incremented. Defaults to [`DEFAULT_CHANNEL_CAPACITY`] (10,000).
+    ///
+    /// # Panics
+    ///
+    /// Panics if `channel_capacity` is zero (Tokio mpsc requires a positive
+    /// capacity).
     #[must_use = "builders do nothing unless consumed"]
     #[inline]
     pub fn with_channel_capacity(mut self, channel_capacity: usize) -> Self {
+        assert!(
+            channel_capacity > 0,
+            "channel_capacity must be greater than zero"
+        );
         self.channel_capacity = channel_capacity;
         self
     }
@@ -434,15 +443,7 @@ impl NatsBookChangePublisher {
                 }
             }
 
-            // Throttle: wait if needed
-            if let Some(interval) = min_interval {
-                let elapsed = last_publish.elapsed();
-                if elapsed < interval {
-                    tokio::time::sleep(interval - elapsed).await;
-                }
-            }
-
-            // Flush the batch
+            // Flush the batch (throttling is applied inside flush_batch)
             Self::flush_batch(&publisher, &mut batch, &mut last_publish, min_interval).await;
         }
 
@@ -535,8 +536,6 @@ impl NatsBookChangePublisher {
             trace!(seq, symbol = %publisher.symbol, "book change batch published to NATS");
         }
 
-        *last_publish = tokio::time::Instant::now();
-
         // Throttle: wait if needed before allowing next flush
         if let Some(interval) = min_interval {
             let elapsed = last_publish.elapsed();
@@ -544,6 +543,8 @@ impl NatsBookChangePublisher {
                 tokio::time::sleep(interval - elapsed).await;
             }
         }
+
+        *last_publish = tokio::time::Instant::now();
     }
 
     /// Serialize and publish a single batch to a NATS subject with retry logic.
