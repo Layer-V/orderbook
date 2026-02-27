@@ -39,10 +39,12 @@ pub fn register_benchmarks(c: &mut Criterion) {
         b.iter(|| json_ser.serialize_book_change(black_box(&book_change)))
     });
 
-    let json_trade_bytes = json_ser.serialize_trade(&trade).unwrap_or_default();
+    let json_trade_bytes = json_ser
+        .serialize_trade(&trade)
+        .expect("json trade serialization must succeed in bench setup");
     let json_book_bytes = json_ser
         .serialize_book_change(&book_change)
-        .unwrap_or_default();
+        .expect("json book_change serialization must succeed in bench setup");
 
     group.bench_function("json_deserialize_trade", |b| {
         b.iter(|| json_ser.deserialize_trade(black_box(&json_trade_bytes)))
@@ -67,10 +69,12 @@ pub fn register_benchmarks(c: &mut Criterion) {
             b.iter(|| bin_ser.serialize_book_change(black_box(&book_change)))
         });
 
-        let bin_trade_bytes = bin_ser.serialize_trade(&trade).unwrap_or_default();
+        let bin_trade_bytes = bin_ser
+            .serialize_trade(&trade)
+            .expect("bincode trade serialization must succeed in bench setup");
         let bin_book_bytes = bin_ser
             .serialize_book_change(&book_change)
-            .unwrap_or_default();
+            .expect("bincode book_change serialization must succeed in bench setup");
 
         group.bench_function("bincode_deserialize_trade", |b| {
             b.iter(|| bin_ser.deserialize_trade(black_box(&bin_trade_bytes)))

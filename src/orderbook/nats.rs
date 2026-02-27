@@ -239,11 +239,15 @@ impl NatsTradePublisher {
         symbol_seq: u64,
         all_seq: u64,
     ) {
+        let content_type = publisher.serializer.content_type();
+
         let mut symbol_headers = async_nats::HeaderMap::new();
         symbol_headers.insert("Nats-Sequence", symbol_seq.to_string().as_str());
+        symbol_headers.insert("Content-Type", content_type);
 
         let mut all_headers = async_nats::HeaderMap::new();
         all_headers.insert("Nats-Sequence", all_seq.to_string().as_str());
+        all_headers.insert("Content-Type", content_type);
 
         // Publish to symbol-specific subject
         let symbol_ok =
