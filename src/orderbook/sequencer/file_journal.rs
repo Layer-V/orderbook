@@ -914,15 +914,15 @@ fn scan_last_sequence(data: &[u8], write_pos: usize) -> Option<u64> {
 mod tests {
     use super::*;
     use crate::orderbook::sequencer::types::{SequencerCommand, SequencerResult};
-    use pricelevel::OrderId;
+    use pricelevel::Id;
 
     fn make_event(seq: u64) -> SequencerEvent<()> {
         SequencerEvent {
             sequence_num: seq,
             timestamp_ns: 1_700_000_000_000_000_000u64.checked_add(seq).unwrap_or(0),
-            command: SequencerCommand::CancelOrder(OrderId::new_uuid()),
+            command: SequencerCommand::CancelOrder(Id::new_uuid()),
             result: SequencerResult::OrderCancelled {
-                order_id: OrderId::new_uuid(),
+                order_id: Id::new_uuid(),
             },
         }
     }

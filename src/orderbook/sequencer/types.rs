@@ -6,7 +6,7 @@
 //! logging and deterministic replay.
 
 use crate::orderbook::trade::TradeResult;
-use pricelevel::{OrderId, OrderType, OrderUpdate, Side};
+use pricelevel::{Id, OrderType, OrderUpdate, Side};
 use serde::{Deserialize, Serialize};
 
 /// A command submitted to the Sequencer for total-ordered execution.
@@ -23,7 +23,7 @@ pub enum SequencerCommand<T> {
     AddOrder(OrderType<T>),
 
     /// Cancel an existing order by its identifier.
-    CancelOrder(OrderId),
+    CancelOrder(Id),
 
     /// Update an existing order (price, quantity, or both).
     UpdateOrder(OrderUpdate),
@@ -31,7 +31,7 @@ pub enum SequencerCommand<T> {
     /// Submit an aggressive market order that sweeps available liquidity.
     MarketOrder {
         /// The order identifier.
-        id: OrderId,
+        id: Id,
         /// The quantity to fill.
         quantity: u64,
         /// The side of the market order (Buy sweeps asks, Sell sweeps bids).
@@ -48,19 +48,19 @@ pub enum SequencerResult {
     /// An order was successfully added to the book.
     OrderAdded {
         /// The identifier of the newly added order.
-        order_id: OrderId,
+        order_id: Id,
     },
 
     /// An order was successfully cancelled.
     OrderCancelled {
         /// The identifier of the cancelled order.
-        order_id: OrderId,
+        order_id: Id,
     },
 
     /// An order was successfully updated.
     OrderUpdated {
         /// The identifier of the updated order.
-        order_id: OrderId,
+        order_id: Id,
     },
 
     /// A trade was executed (possibly partially filled).
