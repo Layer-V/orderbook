@@ -44,6 +44,13 @@ pub use pricelevel::{Id, OrderType, Side, TimeInForce};
 // Legacy alias for backward compatibility
 pub use crate::OrderId;
 
+// Event serialization types
+#[cfg(feature = "bincode")]
+pub use crate::orderbook::serialization::BincodeEventSerializer;
+pub use crate::orderbook::serialization::{
+    EventSerializer, JsonEventSerializer, SerializationError,
+};
+
 // NATS integration types
 #[cfg(feature = "nats")]
 pub use crate::orderbook::nats::NatsTradePublisher;

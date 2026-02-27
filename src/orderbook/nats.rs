@@ -21,6 +21,7 @@
 //! orderbook-rs = { version = "0.6", features = ["nats"] }
 //! ```
 
+use crate::orderbook::serialization::{EventSerializer, JsonEventSerializer};
 use crate::orderbook::trade::{TradeListener, TradeResult};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -88,6 +89,11 @@ pub struct NatsTradePublisher {
 
     /// Maximum number of retry attempts for transient failures.
     max_retries: u32,
+
+    /// Pluggable event serializer. Defaults to [`JsonEventSerializer`] for
+    /// backward compatibility. Can be overridden via
+    /// [`with_serializer`](NatsTradePublisher::with_serializer).
+    serializer: Arc<dyn EventSerializer>,
 }
 
 impl NatsTradePublisher {
@@ -112,6 +118,7 @@ impl NatsTradePublisher {
             publish_count: AtomicU64::new(0),
             error_count: AtomicU64::new(0),
             max_retries: DEFAULT_MAX_RETRIES,
+            serializer: Arc::new(JsonEventSerializer),
         }
     }
 
@@ -122,6 +129,22 @@ impl NatsTradePublisher {
     #[inline]
     pub fn with_max_retries(mut self, max_retries: u32) -> Self {
         self.max_retries = max_retries;
+        self
+    }
+
+    /// Set a custom event serializer.
+    ///
+    /// Defaults to [`JsonEventSerializer`]. Use this to switch to a more
+    /// compact binary format (e.g. `BincodeEventSerializer`) for lower
+    /// latency publishing.
+    ///
+    /// # Arguments
+    ///
+    /// * `serializer` — the serializer implementation to use
+    #[must_use = "builders do nothing unless consumed"]
+    #[inline]
+    pub fn with_serializer(mut self, serializer: Arc<dyn EventSerializer>) -> Self {
+        self.serializer = serializer;
         self
     }
 
@@ -146,12 +169,20 @@ impl NatsTradePublisher {
         self.sequence.load(Ordering::Relaxed)
     }
 
+    /// Returns a reference to the configured event serializer.
+    #[must_use]
+    #[inline]
+    pub fn serializer(&self) -> &dyn EventSerializer {
+        self.serializer.as_ref()
+    }
+
     /// Convert this publisher into a [`TradeListener`] callback.
     ///
-    /// The returned listener serializes each [`TradeResult`] to JSON, assigns
-    /// a unique sequence number per publish, and spawns an async task that
-    /// publishes to both `{prefix}.{symbol}` and `{prefix}.all` subjects on
-    /// the configured JetStream context.
+    /// The returned listener serializes each [`TradeResult`] using the
+    /// configured [`EventSerializer`], assigns a unique sequence number
+    /// per publish, and spawns an async task that publishes to both
+    /// `{prefix}.{symbol}` and `{prefix}.all` subjects on the configured
+    /// JetStream context.
     ///
     /// Publishing is non-blocking: the listener returns immediately after
     /// spawning the async task, keeping the matching engine hot path fast.
@@ -165,7 +196,7 @@ impl NatsTradePublisher {
         let publisher = Arc::new(self);
         let handle = Arc::clone(&publisher);
         let listener = Arc::new(move |trade_result: &TradeResult| {
-            let payload = match serde_json::to_vec(trade_result) {
+            let payload = match publisher.serializer.serialize_trade(trade_result) {
                 Ok(bytes) => bytes,
                 Err(e) => {
                     publisher.error_count.fetch_add(1, Ordering::Relaxed);
@@ -208,11 +239,15 @@ impl NatsTradePublisher {
         symbol_seq: u64,
         all_seq: u64,
     ) {
+        let content_type = publisher.serializer.content_type();
+
         let mut symbol_headers = async_nats::HeaderMap::new();
         symbol_headers.insert("Nats-Sequence", symbol_seq.to_string().as_str());
+        symbol_headers.insert("Content-Type", content_type);
 
         let mut all_headers = async_nats::HeaderMap::new();
         all_headers.insert("Nats-Sequence", all_seq.to_string().as_str());
+        all_headers.insert("Content-Type", content_type);
 
         // Publish to symbol-specific subject
         let symbol_ok =
@@ -297,6 +332,7 @@ impl std::fmt::Debug for NatsTradePublisher {
             .field("publish_count", &self.publish_count.load(Ordering::Relaxed))
             .field("error_count", &self.error_count.load(Ordering::Relaxed))
             .field("max_retries", &self.max_retries)
+            .field("serializer", &self.serializer.content_type())
             .finish()
     }
 }

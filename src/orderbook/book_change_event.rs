@@ -1,5 +1,5 @@
 use pricelevel::Side;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 /// Event data for orderbook price level changes.
@@ -7,7 +7,7 @@ use std::sync::Arc;
 /// order book context so we are not adding symbol here.
 /// This event is sent on operations that update the order book price levels
 /// e.g. adding, cancelling, updating or matching order
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PriceLevelChangedEvent {
     /// the order book side of the price level
     pub side: Side,

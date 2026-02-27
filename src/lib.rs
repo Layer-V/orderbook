@@ -237,6 +237,8 @@ pub mod orderbook;
 pub mod prelude;
 mod utils;
 
+#[cfg(feature = "bincode")]
+pub use orderbook::BincodeEventSerializer;
 #[cfg(feature = "journal")]
 pub use orderbook::FileJournal;
 #[cfg(feature = "nats")]
@@ -252,6 +254,7 @@ pub use orderbook::sequencer::{
     Journal, JournalEntry, JournalError, JournalReadIter, SequencerCommand, SequencerEvent,
     SequencerResult,
 };
+pub use orderbook::serialization::{EventSerializer, JsonEventSerializer, SerializationError};
 pub use orderbook::snapshot::{EnrichedSnapshot, MetricFlags};
 pub use orderbook::statistics::{DepthStats, DistributionBin};
 pub use orderbook::stp::STPMode;
