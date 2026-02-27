@@ -44,5 +44,11 @@ pub use pricelevel::{OrderId, OrderType, Side, TimeInForce};
 // Utility functions
 pub use crate::utils::current_time_millis;
 
+// Sequencer types
+pub use crate::sequencer::{
+    Sequencer, SequencerCommand, SequencerError, SequencerEvent, SequencerHandle, SequencerReceipt,
+    SequencerResult,
+};
+
 // Type aliases for common use cases
 pub use crate::{DefaultOrderBook, DefaultOrderType, LegacyOrderBook, LegacyOrderType};

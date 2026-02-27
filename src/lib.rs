@@ -233,6 +233,7 @@
 //! This analysis confirms that the system design is highly scalable and appropriate for demanding financial applications requiring high-speed processing with data consistency.
 
 pub mod orderbook;
+pub mod sequencer;
 
 pub mod prelude;
 mod utils;
@@ -249,6 +250,10 @@ pub use orderbook::statistics::{DepthStats, DistributionBin};
 pub use orderbook::stp::STPMode;
 pub use orderbook::trade::{TradeListener, TradeResult};
 pub use orderbook::{FeeSchedule, MassCancelResult, OrderBook, OrderBookError, OrderBookSnapshot};
+pub use sequencer::{
+    Sequencer, SequencerCommand, SequencerError, SequencerEvent, SequencerHandle, SequencerReceipt,
+    SequencerResult,
+};
 pub use utils::current_time_millis;
 
 /// Legacy type alias for `OrderBook<()>` to maintain backward compatibility.

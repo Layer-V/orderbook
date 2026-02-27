@@ -28,3 +28,9 @@ src/.DS_Store
 /tarpaulin-report.html
 .secrets
 /scripts/
+
+# Windsurf workflow files (never commit)
+.windsurf/
+
+# Internal documentation (never commit)
+.internalDoc/
