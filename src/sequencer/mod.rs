@@ -49,7 +49,9 @@
 pub mod command;
 pub mod core;
 pub mod event;
+pub mod journal;
 pub mod receipt;
+pub mod replay;
 pub mod result;
 
 #[cfg(test)]
@@ -59,5 +61,7 @@ mod tests;
 pub use command::SequencerCommand;
 pub use core::{Sequencer, SequencerError, SequencerHandle};
 pub use event::SequencerEvent;
+pub use journal::{InMemoryJournal, Journal};
 pub use receipt::SequencerReceipt;
+pub use replay::{ReplayEngine, ReplayError, snapshots_match};
 pub use result::SequencerResult;

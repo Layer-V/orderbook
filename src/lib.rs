@@ -250,6 +250,8 @@ pub use orderbook::statistics::{DepthStats, DistributionBin};
 pub use orderbook::stp::STPMode;
 pub use orderbook::trade::{TradeListener, TradeResult};
 pub use orderbook::{FeeSchedule, MassCancelResult, OrderBook, OrderBookError, OrderBookSnapshot};
+pub use sequencer::journal::{InMemoryJournal, Journal};
+pub use sequencer::replay::{ReplayEngine, ReplayError, snapshots_match};
 pub use sequencer::{
     Sequencer, SequencerCommand, SequencerError, SequencerEvent, SequencerHandle, SequencerReceipt,
     SequencerResult,

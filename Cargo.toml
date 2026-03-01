@@ -39,6 +39,7 @@ serde = { workspace = true }
 sha2 = { workspace = true }
 tokio = { workspace = true, features = ["sync", "rt", "time"] }
 bitflags = { workspace = true }
+thiserror = { workspace = true }
 
 [features]
 default = []
@@ -81,4 +82,5 @@ tokio = { version = "1.49", features = ["sync", "rt", "time"] }
 crossbeam-skiplist = "0.1"
 crossbeam = "0.8"
 bitflags = { version = "2.10", features = ["serde"] }
+thiserror = "2"
 tracing-subscriber = "0.3"

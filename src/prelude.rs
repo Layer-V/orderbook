@@ -45,9 +45,10 @@ pub use pricelevel::{OrderId, OrderType, Side, TimeInForce};
 pub use crate::utils::current_time_millis;
 
 // Sequencer types
+pub use crate::sequencer::replay::snapshots_match;
 pub use crate::sequencer::{
-    Sequencer, SequencerCommand, SequencerError, SequencerEvent, SequencerHandle, SequencerReceipt,
-    SequencerResult,
+    InMemoryJournal, Journal, ReplayEngine, ReplayError, Sequencer, SequencerCommand,
+    SequencerError, SequencerEvent, SequencerHandle, SequencerReceipt, SequencerResult,
 };
 
 // Type aliases for common use cases

@@ -6,6 +6,7 @@
 
 //! Tests for the Sequencer module.
 
-mod concurrency;
-mod error_handling;
-mod ordering;
+pub mod concurrency;
+pub mod error_handling;
+pub mod ordering;
+pub mod replay;
