@@ -447,9 +447,7 @@ where
     /// Cancel an order by ID.
     ///
     /// Tracks the cancellation as `CancelReason::UserRequested` in the
-    /// order state tracker (if configured). For mass cancel operations,
-    /// use [`cancel_order_with_reason`](Self::cancel_order_with_reason)
-    /// to specify the appropriate reason.
+    /// order state tracker (if configured).
     pub fn cancel_order(&self, order_id: Id) -> Result<Option<Arc<OrderType<T>>>, OrderBookError> {
         self.cancel_order_with_reason(order_id, CancelReason::UserRequested)
     }
