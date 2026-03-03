@@ -250,6 +250,9 @@ pub use orderbook::implied_volatility::{
 pub use orderbook::iterators::LevelInfo;
 pub use orderbook::manager::{BookManager, BookManagerStd, BookManagerTokio};
 pub use orderbook::market_impact::{MarketImpact, OrderSimulation};
+pub use orderbook::order_state::{
+    CancelReason, OrderStateListener, OrderStateTracker, OrderStatus,
+};
 pub use orderbook::sequencer::{
     InMemoryJournal, Journal, JournalEntry, JournalError, JournalReadIter, ReplayEngine,
     ReplayError, SequencerCommand, SequencerEvent, SequencerResult, snapshots_match,

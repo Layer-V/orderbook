@@ -329,6 +329,16 @@ impl Clone for OrderBookError {
                 taker_order_id: *taker_order_id,
                 user_id: *user_id,
             },
+            #[cfg(feature = "nats")]
+            OrderBookError::NatsPublishError { message } => OrderBookError::NatsPublishError {
+                message: message.clone(),
+            },
+            #[cfg(feature = "nats")]
+            OrderBookError::NatsSerializationError { message } => {
+                OrderBookError::NatsSerializationError {
+                    message: message.clone(),
+                }
+            }
         }
     }
 }
@@ -336,7 +346,7 @@ impl Clone for OrderBookError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use pricelevel::{Hash32, OrderId};
+    use pricelevel::{Hash32, Id};
 
     #[test]
     fn test_clone_order_not_found() {
@@ -478,7 +488,7 @@ mod tests {
 
     #[test]
     fn test_clone_missing_user_id() {
-        let order_id = OrderId::new_uuid();
+        let order_id = Id::new_uuid();
         let error = OrderBookError::MissingUserId { order_id };
         let cloned = error.clone();
         assert!(matches!(
@@ -489,7 +499,7 @@ mod tests {
 
     #[test]
     fn test_clone_self_trade_prevented() {
-        let taker_id = OrderId::new_uuid();
+        let taker_id = Id::new_uuid();
         let user_id = Hash32::from([1u8; 32]);
         let error = OrderBookError::SelfTradePrevented {
             mode: crate::orderbook::stp::STPMode::CancelMaker,

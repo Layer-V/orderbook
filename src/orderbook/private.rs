@@ -122,6 +122,20 @@ where
         }
     }
 
+    /// Record an order state transition if a tracker is configured.
+    ///
+    /// This is a no-op when `order_state_tracker` is `None`.
+    #[inline]
+    pub(super) fn track_state(
+        &self,
+        order_id: pricelevel::Id,
+        status: super::order_state::OrderStatus,
+    ) {
+        if let Some(ref tracker) = self.order_state_tracker {
+            tracker.transition(order_id, status);
+        }
+    }
+
     /// Convert `OrderType<T>` to OrderType<()> for compatibility with current PriceLevel API
     pub fn convert_to_unit_type(&self, order: &OrderType<T>) -> OrderType<()> {
         match order {

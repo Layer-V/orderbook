@@ -117,6 +117,11 @@ pub struct OrderBook<T = ()> {
     /// Fee schedule for calculating trading fees. When None, no fees are applied.
     /// Fees are calculated during trade execution and can be configured per orderbook.
     pub(super) fee_schedule: Option<FeeSchedule>,
+
+    /// Optional order state tracker for explicit lifecycle tracking.
+    /// When `Some`, every order transition (Open, PartiallyFilled, Filled,
+    /// Cancelled, Rejected) is recorded. When `None`, zero overhead.
+    pub(super) order_state_tracker: Option<super::order_state::OrderStateTracker>,
 }
 
 impl<T> Serialize for OrderBook<T>
@@ -376,6 +381,7 @@ where
             max_order_size: None,
             stp_mode: STPMode::None,
             fee_schedule: None,
+            order_state_tracker: None,
         }
     }
 
@@ -443,6 +449,7 @@ where
             max_order_size: None,
             stp_mode: STPMode::None,
             fee_schedule: None,
+            order_state_tracker: None,
         }
     }
 
@@ -486,6 +493,7 @@ where
             max_order_size: None,
             stp_mode: STPMode::None,
             fee_schedule: None,
+            order_state_tracker: None,
         }
     }
 
@@ -647,6 +655,30 @@ where
     #[inline]
     pub fn stp_mode(&self) -> STPMode {
         self.stp_mode
+    }
+
+    /// Set an order state tracker for explicit lifecycle tracking.
+    ///
+    /// When set, every order transition (Open, PartiallyFilled, Filled,
+    /// Cancelled, Rejected) is recorded and queryable via
+    /// [`order_status`](Self::order_status).
+    pub fn set_order_state_tracker(&mut self, tracker: super::order_state::OrderStateTracker) {
+        self.order_state_tracker = Some(tracker);
+    }
+
+    /// Returns the current status of an order, or `None` if no tracker
+    /// is configured or the order is unknown.
+    #[must_use]
+    pub fn order_status(&self, order_id: Id) -> Option<super::order_state::OrderStatus> {
+        self.order_state_tracker
+            .as_ref()
+            .and_then(|t| t.get(order_id))
+    }
+
+    /// Returns a reference to the order state tracker, if configured.
+    #[must_use]
+    pub fn order_state_tracker(&self) -> Option<&super::order_state::OrderStateTracker> {
+        self.order_state_tracker.as_ref()
     }
 
     /// Create a new order book for the given symbol with Self-Trade Prevention.

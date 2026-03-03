@@ -1,6 +1,7 @@
 use crate::orderbook::book::OrderBook;
 use crate::orderbook::book_change_event::PriceLevelChangedEvent;
 use crate::orderbook::error::OrderBookError;
+use crate::orderbook::order_state::{CancelReason, OrderStatus};
 use crate::orderbook::trade::TradeResult;
 use pricelevel::{Id, OrderType, OrderUpdate, PriceLevel, Quantity, Side};
 use std::sync::Arc;
@@ -443,8 +444,24 @@ where
         }
     }
 
-    /// Cancel an order by ID
+    /// Cancel an order by ID.
+    ///
+    /// Tracks the cancellation as `CancelReason::UserRequested` in the
+    /// order state tracker (if configured).
     pub fn cancel_order(&self, order_id: Id) -> Result<Option<Arc<OrderType<T>>>, OrderBookError> {
+        self.cancel_order_with_reason(order_id, CancelReason::UserRequested)
+    }
+
+    /// Cancel an order by ID with an explicit cancellation reason.
+    ///
+    /// This is the internal implementation used by both `cancel_order`
+    /// and mass cancel operations to track the correct
+    /// [`CancelReason`] in the order state tracker.
+    pub(super) fn cancel_order_with_reason(
+        &self,
+        order_id: Id,
+        reason: CancelReason,
+    ) -> Result<Option<Arc<OrderType<T>>>, OrderBookError> {
         self.cache.invalidate();
         // First, we find the order's location (price and side) without locking
         let location = self.order_locations.get(&order_id).map(|val| *val);
@@ -488,6 +505,21 @@ where
             self.cache.invalidate();
             // If we got a result and the order was canceled
             if let Some(ref cancelled_order) = result {
+                // Track the cancellation in the order state tracker
+                let prev_filled = self
+                    .order_state_tracker
+                    .as_ref()
+                    .and_then(|t| t.get(order_id))
+                    .map(|s| s.filled_quantity())
+                    .unwrap_or(0);
+                self.track_state(
+                    order_id,
+                    OrderStatus::Cancelled {
+                        filled_quantity: prev_filled,
+                        reason,
+                    },
+                );
+
                 // Remove the order from the locations map
                 self.order_locations.remove(&order_id);
 
@@ -531,6 +563,12 @@ where
         if self.stp_mode != crate::orderbook::stp::STPMode::None
             && order.user_id() == pricelevel::Hash32::zero()
         {
+            self.track_state(
+                order.id(),
+                OrderStatus::Rejected {
+                    reason: "missing user_id with STP enabled".to_string(),
+                },
+            );
             return Err(OrderBookError::MissingUserId {
                 order_id: order.id(),
             });
@@ -541,6 +579,16 @@ where
             && tick > 0
             && !order.price().as_u128().is_multiple_of(tick)
         {
+            self.track_state(
+                order.id(),
+                OrderStatus::Rejected {
+                    reason: format!(
+                        "price {} not a multiple of tick size {}",
+                        order.price().as_u128(),
+                        tick
+                    ),
+                },
+            );
             return Err(OrderBookError::InvalidTickSize {
                 price: order.price().as_u128(),
                 tick_size: tick,
@@ -610,6 +658,12 @@ where
         }
 
         if order.is_post_only() && self.will_cross_market(order.price().as_u128(), order.side()) {
+            self.track_state(
+                order.id(),
+                OrderStatus::Rejected {
+                    reason: "post-only order would cross market".to_string(),
+                },
+            );
             return Err(OrderBookError::PriceCrossing {
                 price: order.price().as_u128(),
                 side: order.side(),
@@ -629,6 +683,13 @@ where
                 Some(order.price().as_u128()),
             );
             if potential_match < order.total_quantity() {
+                self.track_state(
+                    order.id(),
+                    OrderStatus::Cancelled {
+                        filled_quantity: 0,
+                        reason: CancelReason::InsufficientLiquidity,
+                    },
+                );
                 return Err(OrderBookError::InsufficientLiquidity {
                     side: order.side(),
                     requested: order.total_quantity(),
@@ -658,12 +719,23 @@ where
             listener(&trade_result) // emit trade events to listener
         }
 
+        // Track the incoming order's state based on matching result
+        let original_qty = order.total_quantity();
+        let filled_qty = original_qty.saturating_sub(match_result.remaining_quantity());
+
         // If the order was not fully filled, add the remainder to the book
         if match_result.remaining_quantity() > 0 {
             if order.is_immediate() {
                 // IOC/FOK orders should not have a resting part.
                 // If FOK, it should have been fully filled or cancelled before this point.
                 // If IOC, this is the remaining part that couldn't be filled, so we just drop it.
+                self.track_state(
+                    order.id(),
+                    OrderStatus::Cancelled {
+                        filled_quantity: filled_qty,
+                        reason: CancelReason::InsufficientLiquidity,
+                    },
+                );
                 return Err(OrderBookError::InsufficientLiquidity {
                     side: order.side(),
                     requested: order.quantity(), // Now uses the trait method
@@ -719,13 +791,30 @@ where
                 _ => {}
             }
 
+            // Track state: Open (no fills) or PartiallyFilled (some fills, resting)
+            if filled_qty > 0 {
+                self.track_state(
+                    order.id(),
+                    OrderStatus::PartiallyFilled {
+                        original_quantity: original_qty,
+                        filled_quantity: filled_qty,
+                    },
+                );
+            } else {
+                self.track_state(order.id(), OrderStatus::Open);
+            }
+
             // Convert back to generic type for return
             let generic_order = self.convert_from_unit_type(&unit_order_arc);
             Ok(Arc::new(generic_order))
         } else {
-            // The order was fully matched, create an Arc from the matched result
-            // Note: The original order object is consumed, but we can reconstruct its essence if needed.
-            // For now, we return a representation of the completed order.
+            // The order was fully matched
+            self.track_state(
+                order.id(),
+                OrderStatus::Filled {
+                    filled_quantity: original_qty,
+                },
+            );
             Ok(Arc::new(order))
         }
     }

@@ -11,6 +11,7 @@
 
 use super::book::OrderBook;
 use super::book_change_event::PriceLevelChangedEvent;
+use super::order_state::{CancelReason, OrderStatus};
 use pricelevel::{Hash32, Id, Side};
 use serde::{Deserialize, Serialize};
 use tracing::trace;
@@ -157,6 +158,23 @@ where
             }
         }
 
+        // 2b. Track cancellation state for each order
+        for &order_id in &cancelled_order_ids {
+            let prev_filled = self
+                .order_state_tracker
+                .as_ref()
+                .and_then(|t| t.get(order_id))
+                .map(|s| s.filled_quantity())
+                .unwrap_or(0);
+            self.track_state(
+                order_id,
+                OrderStatus::Cancelled {
+                    filled_quantity: prev_filled,
+                    reason: CancelReason::MassCancelAll,
+                },
+            );
+        }
+
         // 3. Clear tracking maps
         self.order_locations.clear();
         self.user_orders.clear();
@@ -213,7 +231,7 @@ where
         );
 
         let order_ids = self.collect_order_ids_by_side(side);
-        self.cancel_order_batch(&order_ids)
+        self.cancel_order_batch_with_reason(&order_ids, CancelReason::MassCancelBySide)
     }
 
     /// Cancel all resting orders belonging to a specific user.
@@ -263,7 +281,7 @@ where
             .map(|(_, ids)| ids)
             .unwrap_or_default();
 
-        self.cancel_order_batch(&order_ids)
+        self.cancel_order_batch_with_reason(&order_ids, CancelReason::MassCancelByUser)
     }
 
     /// Cancel all resting orders on a given side within a price range
@@ -328,20 +346,24 @@ where
             }
         }
 
-        self.cancel_order_batch(&order_ids)
+        self.cancel_order_batch_with_reason(&order_ids, CancelReason::MassCancelByPriceRange)
     }
 
-    /// Internal helper: cancel a batch of orders by their IDs.
+    /// Internal helper: cancel a batch of orders by their IDs with a reason.
     ///
-    /// Calls [`Self::cancel_order`] for each ID. Orders that no longer exist
-    /// (e.g. concurrently cancelled) are silently skipped.
-    fn cancel_order_batch(&self, order_ids: &[Id]) -> MassCancelResult {
+    /// Calls [`Self::cancel_order_with_reason`] for each ID. Orders that no
+    /// longer exist (e.g. concurrently cancelled) are silently skipped.
+    fn cancel_order_batch_with_reason(
+        &self,
+        order_ids: &[Id],
+        reason: CancelReason,
+    ) -> MassCancelResult {
         let mut cancelled_ids = Vec::with_capacity(order_ids.len());
 
         for &order_id in order_ids {
-            // cancel_order handles: listener notification, special order cleanup,
-            // empty level removal, and order_locations cleanup.
-            if let Ok(Some(_)) = self.cancel_order(order_id) {
+            // cancel_order_with_reason handles: listener notification, special order cleanup,
+            // empty level removal, order_locations cleanup, and state tracking.
+            if let Ok(Some(_)) = self.cancel_order_with_reason(order_id, reason) {
                 cancelled_ids.push(order_id);
             }
         }

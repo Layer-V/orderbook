@@ -36,6 +36,9 @@ pub mod fees;
 /// Mass cancel operations for bulk order removal.
 pub mod mass_cancel;
 
+/// Order state machine for explicit lifecycle tracking.
+pub mod order_state;
+
 /// Pluggable event serialization for NATS publishers and consumers.
 pub mod serialization;
 
@@ -68,6 +71,7 @@ pub use mass_cancel::MassCancelResult;
 pub use nats::NatsTradePublisher;
 #[cfg(feature = "nats")]
 pub use nats_book_change::{BookChangeBatch, BookChangeEntry, NatsBookChangePublisher};
+pub use order_state::{CancelReason, OrderStateListener, OrderStateTracker, OrderStatus};
 #[cfg(feature = "special_orders")]
 pub use repricing::{RepricingOperations, RepricingResult, SpecialOrderTracker};
 #[cfg(feature = "journal")]

@@ -44,6 +44,11 @@ pub use pricelevel::{Id, OrderType, Side, TimeInForce};
 // Legacy alias for backward compatibility
 pub use crate::OrderId;
 
+// Order state tracking types
+pub use crate::orderbook::order_state::{
+    CancelReason, OrderStateListener, OrderStateTracker, OrderStatus,
+};
+
 // Event serialization types
 #[cfg(feature = "bincode")]
 pub use crate::orderbook::serialization::BincodeEventSerializer;

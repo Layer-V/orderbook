@@ -5,6 +5,7 @@
 //! the matching hot path is unchanged with zero overhead.
 
 use crate::orderbook::book_change_event::PriceLevelChangedEvent;
+use crate::orderbook::order_state::{CancelReason, OrderStatus};
 use crate::orderbook::pool::MatchingPool;
 use crate::orderbook::stp::{STPAction, check_stp_at_level};
 use crate::{OrderBook, OrderBookError};
@@ -281,8 +282,11 @@ where
             match_side.remove(price);
         }
 
-        // Batch remove filled orders from tracking
+        // Batch remove filled orders from tracking and update state
         for filled_id in &filled_orders {
+            // Track the resting order as Filled (quantity unknown here;
+            // use 0 as placeholder — the important thing is the terminal state)
+            self.track_state(*filled_id, OrderStatus::Filled { filled_quantity: 0 });
             self.order_locations.remove(filled_id);
             self.untrack_order_by_id(filled_id);
         }
@@ -297,6 +301,13 @@ where
         // When partial fills happened (remaining < original quantity), return Ok
         // with the partial result so the caller can see what was executed.
         if stp_taker_cancelled && remaining_quantity == quantity {
+            self.track_state(
+                order_id,
+                OrderStatus::Cancelled {
+                    filled_quantity: 0,
+                    reason: CancelReason::SelfTradePrevention,
+                },
+            );
             return Err(OrderBookError::SelfTradePrevented {
                 mode: self.stp_mode,
                 taker_order_id: order_id,
