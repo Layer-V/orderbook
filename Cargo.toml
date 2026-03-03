@@ -6,8 +6,8 @@ authors = ["Joaquin Bejar <jb@taunais.com>"]
 description = "A high-performance, lock-free price level implementation for limit order books in Rust. This library provides the building blocks for creating efficient trading systems with support for multiple order types and concurrent access patterns."
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/joaquinbejar/OrderBook-rs"
-homepage = "https://github.com/joaquinbejar/OrderBook-rs"
+repository = "https://github.com/Layer-V/orderbook"
+homepage = "https://github.com/Layer-V/orderbook"
 keywords = ["finance", "orderbook", "trading"]
 categories = ["finance", "data-structures"]
 
