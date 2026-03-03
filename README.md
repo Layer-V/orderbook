@@ -1,13 +1,13 @@
 [![Dual License](https://img.shields.io/badge/license-MIT%20and%20Apache%202.0-blue)](./LICENSE)
 [![Crates.io](https://img.shields.io/crates/v/orderbook-rs.svg)](https://crates.io/crates/orderbook-rs)
 [![Downloads](https://img.shields.io/crates/d/orderbook-rs.svg)](https://crates.io/crates/orderbook-rs)
-[![Stars](https://img.shields.io/github/stars/Layer-V/orderbook.svg)](https://github.com/joaquinbejar/OrderBook-rs/stargazers)
-[![Issues](https://img.shields.io/github/issues/Layer-V/orderbook.svg)](https://github.com/joaquinbejar/OrderBook-rs/issues)
-[![PRs](https://img.shields.io/github/issues-pr/Layer-V/orderbook.svg)](https://github.com/joaquinbejar/OrderBook-rs/pulls)
+[![Stars](https://img.shields.io/github/stars/joaquinbejar/OrderBook-rs.svg)](https://github.com/joaquinbejar/OrderBook-rs/stargazers)
+[![Issues](https://img.shields.io/github/issues/joaquinbejar/OrderBook-rs.svg)](https://github.com/joaquinbejar/OrderBook-rs/issues)
+[![PRs](https://img.shields.io/github/issues-pr/joaquinbejar/OrderBook-rs.svg)](https://github.com/joaquinbejar/OrderBook-rs/pulls)
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/Layer-V/orderbook/build.yml)](https://github.com/joaquinbejar/OrderBook-rs/actions)
-[![Coverage](https://img.shields.io/codecov/c/github/Layer-V/orderbook)](https://codecov.io/gh/Layer-V/orderbook)
-[![Dependencies](https://img.shields.io/librariesio/github/Layer-V/orderbook)](https://libraries.io/github/Layer-V/orderbook)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/joaquinbejar/OrderBook-rs/build.yml)](https://github.com/joaquinbejar/OrderBook-rs/actions)
+[![Coverage](https://img.shields.io/codecov/c/github/joaquinbejar/OrderBook-rs)](https://codecov.io/gh/joaquinbejar/OrderBook-rs)
+[![Dependencies](https://img.shields.io/librariesio/github/joaquinbejar/OrderBook-rs)](https://libraries.io/github/joaquinbejar/OrderBook-rs)
 [![Documentation](https://img.shields.io/badge/docs-latest-blue.svg)](https://docs.rs/orderbook-rs)
 
 
