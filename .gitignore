@@ -34,3 +34,4 @@ src/.DS_Store
 
 # Internal documentation (never commit)
 .internalDoc/
+/.windsurfrules
