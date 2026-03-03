@@ -32,6 +32,10 @@ use std::time::Duration;
 /// Returns the current time in nanoseconds since the Unix epoch.
 ///
 /// Returns `0` if the system clock is before the Unix epoch.
+/// If the duration exceeds `u64::MAX` nanoseconds (~584 years from epoch)
+/// the value is capped at `u64::MAX`. This matches the fallback used
+/// by [`OrderStateTracker::purge_terminal_older_than`] so comparisons
+/// remain consistent.
 #[inline]
 fn nanos_since_epoch() -> u64 {
     std::time::SystemTime::now()
@@ -225,6 +229,11 @@ pub struct OrderStateTracker {
     /// Current status of each tracked order.
     states: DashMap<Id, OrderStatus>,
     /// Timestamped transition history per order: `(timestamp_ns, status)`.
+    ///
+    /// History grows linearly with transitions for each order (e.g. many
+    /// partial fills). Entries are evicted together with their state both
+    /// by capacity-based eviction in [`enqueue_terminal`](Self::enqueue_terminal)
+    /// and by [`purge_terminal_older_than`](Self::purge_terminal_older_than).
     history: DashMap<Id, Vec<(u64, OrderStatus)>>,
     /// FIFO queue of terminal-state order IDs for eviction.
     terminal_queue: Mutex<VecDeque<Id>>,
@@ -357,6 +366,7 @@ impl OrderStateTracker {
                     {
                         drop(entry);
                         self.states.remove(&evicted_id);
+                        self.history.remove(&evicted_id);
                     }
                 }
             }
