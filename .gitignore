@@ -29,6 +29,9 @@ src/.DS_Store
 .secrets
 /scripts/
 
+# Temporary files
+tmp_reply.json
+
 # Windsurf workflow files (never commit)
 .windsurf/
 
