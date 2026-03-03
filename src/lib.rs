@@ -302,7 +302,7 @@ pub type LegacyOrderBook = OrderBook<()>;
 /// with unit type `()` as the extra fields parameter.
 pub type DefaultOrderBook = OrderBook<()>;
 
-// Re-export tipos de pricelevel con alias
+// Re-export pricelevel types with aliases
 pub use pricelevel::{Id, OrderType, Side, TimeInForce};
 
 /// Legacy type alias for backward compatibility with code using `OrderId`.
